@@ -20,15 +20,27 @@ Route::get('/hello', function () {
 })->middleware('auth:sanctum');
 
 // Budget routes
-Route::prefix('budget')->group(function () {
-    Route::get('/records', [BudgetController::class, 'index'])->middleware('auth:sanctum');
-    Route::post('/import', [BudgetController::class, 'import'])->middleware('auth:sanctum');
-    Route::get('/summary', [BudgetController::class, 'getSummary'])->middleware('auth:sanctum');
-    Route::post('/records', [BudgetController::class, 'store'])->middleware('auth:sanctum');
-    Route::put('/records/{id}', [BudgetController::class, 'update'])->middleware('auth:sanctum');
-    Route::delete('/records/{id}', [BudgetController::class, 'destroy'])->middleware('auth:sanctum');
-});
+// Route::prefix('budget')->group(function () {
+//     Route::get('/records', [BudgetController::class, 'index'])->middleware('auth:sanctum');
+//     Route::post('/import', [BudgetController::class, 'import'])->middleware('auth:sanctum');
+//     Route::get('/summary', [BudgetController::class, 'getSummary'])->middleware('auth:sanctum');
+//     Route::post('/records', [BudgetController::class, 'store'])->middleware('auth:sanctum');
+//     Route::put('/records/{id}', [BudgetController::class, 'update'])->middleware('auth:sanctum');
+//     Route::delete('/records/{id}', [BudgetController::class, 'destroy'])->middleware('auth:sanctum');
+// });
 
+Route::prefix('budget')->middleware('auth:sanctum')->group(function () {
+    Route::get('/records', [BudgetController::class, 'index']);
+    Route::get('/records/{id}', [BudgetController::class, 'show']);
+    Route::post('/records', [BudgetController::class, 'store']);
+    Route::put('/records/{id}', [BudgetController::class, 'update']);
+    Route::delete('/records/{id}', [BudgetController::class, 'destroy']);
+    Route::delete('/records', [BudgetController::class, 'bulkDelete']);
+    Route::post('/import', [BudgetController::class, 'import']);
+    Route::get('/summary', [BudgetController::class, 'getSummary']);
+    Route::get('/export', [BudgetController::class, 'export']);
+    Route::get('/filter-options', [BudgetController::class, 'getFilterOptions']);
+});
 
 
 
@@ -119,4 +131,30 @@ Route::prefix('net-expenditure')->group(function () {
     Route::get('/data', [NetExpenditureController::class, 'getData'])->middleware('auth:sanctum');
     Route::get('/filter-options', [NetExpenditureController::class, 'getFilterOptionsEndpoint'])->middleware('auth:sanctum');
     Route::get('/export', [NetExpenditureController::class, 'export'])->middleware('auth:sanctum');
+});
+
+
+
+use App\Http\Controllers\API\NetAllocationController;
+
+
+// Net Allocation Routes
+Route::prefix('net-allocation')->middleware('auth:sanctum')->group(function () {
+    // Get data with filters
+    Route::get('/data', [NetAllocationController::class, 'getData']);
+    
+    // Get filter options (dropdown values)
+    Route::get('/filter-options', [NetAllocationController::class, 'getFilterOptionsEndpoint']);
+    
+   
+});
+
+use App\Http\Controllers\API\UserController;
+
+Route::middleware('auth:sanctum')->group(function () {
+    // User profile routes
+    Route::get('/user/profile', [UserController::class, 'getProfile']);
+    Route::put('/user/profile', [UserController::class, 'updateProfile']);
+    
+    // ... other routes
 });

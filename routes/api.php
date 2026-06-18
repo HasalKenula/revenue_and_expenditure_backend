@@ -158,3 +158,25 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // ... other routes
 });
+
+
+use App\Http\Controllers\API\WOPController;
+
+
+// WOP Routes
+Route::prefix('wop')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [WOPController::class, 'getData']);
+    Route::get('/filter-options', [WOPController::class, 'getFilterOptions']);
+    Route::get('/export', [WOPController::class, 'export']);
+});
+
+
+use App\Http\Controllers\API\COEOWController;
+
+
+// COEOW Routes (Classification of Expenditure - Object Wise)
+Route::prefix('coeow')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [COEOWController::class, 'getData']);
+    Route::get('/filter-options', [COEOWController::class, 'getFilterOptions']);
+    Route::get('/export', [COEOWController::class, 'export']);
+});

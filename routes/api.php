@@ -180,3 +180,14 @@ Route::prefix('coeow')->middleware('auth:sanctum')->group(function () {
     Route::get('/filter-options', [COEOWController::class, 'getFilterOptions']);
     Route::get('/export', [COEOWController::class, 'export']);
 });
+
+
+use App\Http\Controllers\API\COEHWController;
+
+
+// COEHW (Classification of Expenditure Head Wise) Routes
+Route::prefix('coehw')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [COEHWController::class, 'getData']);
+    Route::get('/filter-options', [COEHWController::class, 'getFilterOptions']);
+    Route::get('/export', [COEHWController::class, 'export']);
+});

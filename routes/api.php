@@ -191,3 +191,14 @@ Route::prefix('coehw')->middleware('auth:sanctum')->group(function () {
     Route::get('/filter-options', [COEHWController::class, 'getFilterOptions']);
     Route::get('/export', [COEHWController::class, 'export']);
 });
+
+
+use App\Http\Controllers\API\RCExpenditureController;
+
+
+// RC Expenditure Routes
+Route::prefix('rc-expenditure')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [RCExpenditureController::class, 'getData']);
+    Route::get('/filter-options', [RCExpenditureController::class, 'getFilterOptions']);
+    Route::get('/export', [RCExpenditureController::class, 'export']);
+});

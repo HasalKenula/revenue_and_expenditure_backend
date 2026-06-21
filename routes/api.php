@@ -202,3 +202,12 @@ Route::prefix('rc-expenditure')->middleware('auth:sanctum')->group(function () {
     Route::get('/filter-options', [RCExpenditureController::class, 'getFilterOptions']);
     Route::get('/export', [RCExpenditureController::class, 'export']);
 });
+
+use App\Http\Controllers\API\ODDController;
+
+// ODD (Other Department Debits) Routes
+Route::prefix('odd')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [ODDController::class, 'getData']);
+    Route::get('/filter-options', [ODDController::class, 'getFilterOptions']);
+    Route::get('/export', [ODDController::class, 'export']);
+});

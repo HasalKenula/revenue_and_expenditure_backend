@@ -158,3 +158,47 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // ... other routes
 });
+
+
+use App\Http\Controllers\API\WOPController;
+
+
+// WOP Routes
+Route::prefix('wop')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [WOPController::class, 'getData']);
+    Route::get('/filter-options', [WOPController::class, 'getFilterOptions']);
+    Route::get('/export', [WOPController::class, 'export']);
+});
+
+
+use App\Http\Controllers\API\COEOWController;
+
+
+// COEOW Routes (Classification of Expenditure - Object Wise)
+Route::prefix('coeow')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [COEOWController::class, 'getData']);
+    Route::get('/filter-options', [COEOWController::class, 'getFilterOptions']);
+    Route::get('/export', [COEOWController::class, 'export']);
+});
+
+
+use App\Http\Controllers\API\COEHWController;
+
+
+// COEHW (Classification of Expenditure Head Wise) Routes
+Route::prefix('coehw')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [COEHWController::class, 'getData']);
+    Route::get('/filter-options', [COEHWController::class, 'getFilterOptions']);
+    Route::get('/export', [COEHWController::class, 'export']);
+});
+
+
+use App\Http\Controllers\API\RCExpenditureController;
+
+
+// RC Expenditure Routes
+Route::prefix('rc-expenditure')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [RCExpenditureController::class, 'getData']);
+    Route::get('/filter-options', [RCExpenditureController::class, 'getFilterOptions']);
+    Route::get('/export', [RCExpenditureController::class, 'export']);
+});

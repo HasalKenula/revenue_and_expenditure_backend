@@ -57,14 +57,22 @@ class JournalSummaryController extends Controller
             $results = [];
             $totalExpenditure = 0;
             $totalRefundRevenue = 0;
-            $totalDeposit = 0;
-            $totalCommercial = 0;
-            $totalAdvance = 0;
-            $totalProvFund = 0;
+            $totalDepositDR = 0;
+            $totalCommercialDR = 0;
+            $totalAdvanceDR = 0;
+            $totalProvFundDR = 0;
+            $totalSurchargeCR = 0;
+            $totalRevenueCR = 0;
+            $totalDepositCR = 0;
+            $totalCommercialCR = 0;
+            $totalAdvanceCR = 0;
+            $totalProvFundCR = 0;
             $totalDebit = 0;
+            $totalCredit = 0;
+            $totalExpenditureDRCR = 0;
 
             foreach ($trnos as $trno) {
-                // Get Expenditure (A/C) - DR (1000) with DR = 'DR'
+                // DR Transactions
                 $expenditure = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
@@ -72,7 +80,6 @@ class JournalSummaryController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get Refund Revenue - DR (5000) with DR = 'DR'
                 $refundRevenue = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
@@ -80,59 +87,124 @@ class JournalSummaryController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get Deposit (AC) - DR (6000) with DR = 'DR'
-                $deposit = MonthlyFincance::whereYear('created_at', $year)
+                $depositDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 6000)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get Commercial (AC) - DR (7000) with DR = 'DR'
-                $commercial = MonthlyFincance::whereYear('created_at', $year)
+                $commercialDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 7000)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get Advance (AC) - DR (8493) with DR = 'DR'
-                $advance = MonthlyFincance::whereYear('created_at', $year)
+                $advanceDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 8493)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get Prov Fund (AC) - DR (8098) with DR = 'DR'
-                $provFund = MonthlyFincance::whereYear('created_at', $year)
+                $provFundDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 8098)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Calculate Total Debit
-                $totalDebitAmount = $expenditure + $refundRevenue + $deposit + $commercial + $advance + $provFund;
+                // CR Transactions
+                $surchargeCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 2000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $revenueCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 4000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $depositCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 6000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $commercialCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 7000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $advanceCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 8493)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $provFundCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 8098)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                // Calculate Total Debit (Sum of all DR)
+                $totalDebitAmount = $expenditure + $refundRevenue + $depositDR + $commercialDR + $advanceDR + $provFundDR;
+                
+                // Calculate Total Credit (Sum of all CR)
+                $totalCreditAmount = $surchargeCR + $revenueCR + $depositCR + $commercialCR + $advanceCR + $provFundCR;
+                
+                // Calculate Expenditure (DR - CR)
+                $expenditureDRCR = $totalDebitAmount - $totalCreditAmount;
 
                 $results[] = [
                     'trno' => $trno,
                     'expenditure' => round($expenditure, 2),
                     'refund_revenue' => round($refundRevenue, 2),
-                    'deposit' => round($deposit, 2),
-                    'commercial' => round($commercial, 2),
-                    'advance' => round($advance, 2),
-                    'prov_fund' => round($provFund, 2),
+                    'deposit_dr' => round($depositDR, 2),
+                    'commercial_dr' => round($commercialDR, 2),
+                    'advance_dr' => round($advanceDR, 2),
+                    'prov_fund_dr' => round($provFundDR, 2),
+                    'surcharge_cr' => round($surchargeCR, 2),
+                    'revenue_cr' => round($revenueCR, 2),
+                    'deposit_cr' => round($depositCR, 2),
+                    'commercial_cr' => round($commercialCR, 2),
+                    'advance_cr' => round($advanceCR, 2),
+                    'prov_fund_cr' => round($provFundCR, 2),
                     'total_debit' => round($totalDebitAmount, 2),
+                    'total_credit' => round($totalCreditAmount, 2),
+                    'expenditure_dr_cr' => round($expenditureDRCR, 2),
                 ];
 
+                // DR Totals
                 $totalExpenditure += $expenditure;
                 $totalRefundRevenue += $refundRevenue;
-                $totalDeposit += $deposit;
-                $totalCommercial += $commercial;
-                $totalAdvance += $advance;
-                $totalProvFund += $provFund;
+                $totalDepositDR += $depositDR;
+                $totalCommercialDR += $commercialDR;
+                $totalAdvanceDR += $advanceDR;
+                $totalProvFundDR += $provFundDR;
+                
+                // CR Totals
+                $totalSurchargeCR += $surchargeCR;
+                $totalRevenueCR += $revenueCR;
+                $totalDepositCR += $depositCR;
+                $totalCommercialCR += $commercialCR;
+                $totalAdvanceCR += $advanceCR;
+                $totalProvFundCR += $provFundCR;
+                
                 $totalDebit += $totalDebitAmount;
+                $totalCredit += $totalCreditAmount;
+                $totalExpenditureDRCR += $expenditureDRCR;
             }
 
             return response()->json([
@@ -142,11 +214,19 @@ class JournalSummaryController extends Controller
                     'totals' => [
                         'total_expenditure' => round($totalExpenditure, 2),
                         'total_refund_revenue' => round($totalRefundRevenue, 2),
-                        'total_deposit' => round($totalDeposit, 2),
-                        'total_commercial' => round($totalCommercial, 2),
-                        'total_advance' => round($totalAdvance, 2),
-                        'total_prov_fund' => round($totalProvFund, 2),
+                        'total_deposit_dr' => round($totalDepositDR, 2),
+                        'total_commercial_dr' => round($totalCommercialDR, 2),
+                        'total_advance_dr' => round($totalAdvanceDR, 2),
+                        'total_prov_fund_dr' => round($totalProvFundDR, 2),
+                        'total_surcharge_cr' => round($totalSurchargeCR, 2),
+                        'total_revenue_cr' => round($totalRevenueCR, 2),
+                        'total_deposit_cr' => round($totalDepositCR, 2),
+                        'total_commercial_cr' => round($totalCommercialCR, 2),
+                        'total_advance_cr' => round($totalAdvanceCR, 2),
+                        'total_prov_fund_cr' => round($totalProvFundCR, 2),
                         'total_debit' => round($totalDebit, 2),
+                        'total_credit' => round($totalCredit, 2),
+                        'total_expenditure_dr_cr' => round($totalExpenditureDRCR, 2),
                         'total_records' => count($results)
                     ],
                     'filters' => [
@@ -172,20 +252,17 @@ class JournalSummaryController extends Controller
     public function getFilterOptions(Request $request)
     {
         try {
-            // Get available years from created_at
             $years = MonthlyFincance::select(DB::raw('YEAR(created_at) as year'))
                 ->distinct()
                 ->orderBy('year', 'desc')
                 ->pluck('year')
                 ->values();
 
-            // If no years found, provide default range
             if ($years->isEmpty()) {
                 $currentYear = date('Y');
                 $years = collect(range($currentYear - 5, $currentYear));
             }
 
-            // Months 1-12
             $months = collect(range(1, 12));
 
             return response()->json([
@@ -220,7 +297,6 @@ class JournalSummaryController extends Controller
                 ], 422);
             }
 
-            // Get data using the same logic
             $trnos = MonthlyFincance::whereYear('created_at', $year)
                 ->where('month', $month)
                 ->distinct()
@@ -238,13 +314,22 @@ class JournalSummaryController extends Controller
             $exportData = [];
             $totalExpenditure = 0;
             $totalRefundRevenue = 0;
-            $totalDeposit = 0;
-            $totalCommercial = 0;
-            $totalAdvance = 0;
-            $totalProvFund = 0;
+            $totalDepositDR = 0;
+            $totalCommercialDR = 0;
+            $totalAdvanceDR = 0;
+            $totalProvFundDR = 0;
+            $totalSurchargeCR = 0;
+            $totalRevenueCR = 0;
+            $totalDepositCR = 0;
+            $totalCommercialCR = 0;
+            $totalAdvanceCR = 0;
+            $totalProvFundCR = 0;
             $totalDebit = 0;
+            $totalCredit = 0;
+            $totalExpenditureDRCR = 0;
 
             foreach ($trnos as $trno) {
+                // DR
                 $expenditure = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
@@ -259,66 +344,134 @@ class JournalSummaryController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $deposit = MonthlyFincance::whereYear('created_at', $year)
+                $depositDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 6000)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $commercial = MonthlyFincance::whereYear('created_at', $year)
+                $commercialDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 7000)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $advance = MonthlyFincance::whereYear('created_at', $year)
+                $advanceDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 8493)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $provFund = MonthlyFincance::whereYear('created_at', $year)
+                $provFundDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $month)
                     ->where('trno', $trno)
                     ->where('dr_cr_code', 8098)
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $totalDebitAmount = $expenditure + $refundRevenue + $deposit + $commercial + $advance + $provFund;
+                // CR
+                $surchargeCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 2000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $revenueCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 4000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $depositCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 6000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $commercialCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 7000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $advanceCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 8493)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $provFundCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $month)
+                    ->where('trno', $trno)
+                    ->where('dr_cr_code', 8098)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                $totalDebitAmount = $expenditure + $refundRevenue + $depositDR + $commercialDR + $advanceDR + $provFundDR;
+                $totalCreditAmount = $surchargeCR + $revenueCR + $depositCR + $commercialCR + $advanceCR + $provFundCR;
+                $expenditureDRCR = $totalDebitAmount - $totalCreditAmount;
 
                 $exportData[] = [
                     'TR No' => $trno,
-                    'Expenditure (A/C)' => round($expenditure, 2),
-                    'Refund Revenue' => round($refundRevenue, 2),
-                    'Deposit (AC)' => round($deposit, 2),
-                    'Commercial (AC)' => round($commercial, 2),
-                    'Advance (AC)' => round($advance, 2),
-                    'Prov Fund (AC)' => round($provFund, 2),
+                    'Expenditure (DR)' => round($expenditure, 2),
+                    'Refund Revenue (DR)' => round($refundRevenue, 2),
+                    'Deposit (DR)' => round($depositDR, 2),
+                    'Commercial (DR)' => round($commercialDR, 2),
+                    'Advance (DR)' => round($advanceDR, 2),
+                    'Prov Fund (DR)' => round($provFundDR, 2),
+                    'Surcharge (CR)' => round($surchargeCR, 2),
+                    'Revenue (CR)' => round($revenueCR, 2),
+                    'Deposit (CR)' => round($depositCR, 2),
+                    'Commercial (CR)' => round($commercialCR, 2),
+                    'Advance (CR)' => round($advanceCR, 2),
+                    'Prov Fund (CR)' => round($provFundCR, 2),
                     'Total Debit' => round($totalDebitAmount, 2),
+                    'Total Credit' => round($totalCreditAmount, 2),
+                    'Expenditure (DR-CR)' => round($expenditureDRCR, 2),
                 ];
 
                 $totalExpenditure += $expenditure;
                 $totalRefundRevenue += $refundRevenue;
-                $totalDeposit += $deposit;
-                $totalCommercial += $commercial;
-                $totalAdvance += $advance;
-                $totalProvFund += $provFund;
+                $totalDepositDR += $depositDR;
+                $totalCommercialDR += $commercialDR;
+                $totalAdvanceDR += $advanceDR;
+                $totalProvFundDR += $provFundDR;
+                $totalSurchargeCR += $surchargeCR;
+                $totalRevenueCR += $revenueCR;
+                $totalDepositCR += $depositCR;
+                $totalCommercialCR += $commercialCR;
+                $totalAdvanceCR += $advanceCR;
+                $totalProvFundCR += $provFundCR;
                 $totalDebit += $totalDebitAmount;
+                $totalCredit += $totalCreditAmount;
+                $totalExpenditureDRCR += $expenditureDRCR;
             }
 
-            // Add totals row
             $exportData[] = [
                 'TR No' => 'TOTAL',
-                'Expenditure (A/C)' => round($totalExpenditure, 2),
-                'Refund Revenue' => round($totalRefundRevenue, 2),
-                'Deposit (AC)' => round($totalDeposit, 2),
-                'Commercial (AC)' => round($totalCommercial, 2),
-                'Advance (AC)' => round($totalAdvance, 2),
-                'Prov Fund (AC)' => round($totalProvFund, 2),
+                'Expenditure (DR)' => round($totalExpenditure, 2),
+                'Refund Revenue (DR)' => round($totalRefundRevenue, 2),
+                'Deposit (DR)' => round($totalDepositDR, 2),
+                'Commercial (DR)' => round($totalCommercialDR, 2),
+                'Advance (DR)' => round($totalAdvanceDR, 2),
+                'Prov Fund (DR)' => round($totalProvFundDR, 2),
+                'Surcharge (CR)' => round($totalSurchargeCR, 2),
+                'Revenue (CR)' => round($totalRevenueCR, 2),
+                'Deposit (CR)' => round($totalDepositCR, 2),
+                'Commercial (CR)' => round($totalCommercialCR, 2),
+                'Advance (CR)' => round($totalAdvanceCR, 2),
+                'Prov Fund (CR)' => round($totalProvFundCR, 2),
                 'Total Debit' => round($totalDebit, 2),
+                'Total Credit' => round($totalCredit, 2),
+                'Expenditure (DR-CR)' => round($totalExpenditureDRCR, 2),
             ];
 
             return response()->json([

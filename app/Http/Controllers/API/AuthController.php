@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    //
+    //created register
      public function register(Request $request){
         $validator = Validator::make($request->all(),[
             'name'=>'required|string|max:255',
@@ -37,6 +37,7 @@ class AuthController extends Controller
 
     }
 
+    //created login
       public function login(Request $request){
         $validator = Validator::make($request->all(),[           
             'email'=>'required|string|email',

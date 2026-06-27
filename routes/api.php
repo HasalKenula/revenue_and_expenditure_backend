@@ -252,3 +252,14 @@ Route::prefix('imprest-balance')->middleware('auth:sanctum')->group(function () 
     Route::get('/filter-options', [ImprestBalanceController::class, 'getFilterOptions']);
     Route::get('/export', [ImprestBalanceController::class, 'export']);
 });
+
+
+use App\Http\Controllers\API\MaintenanceController;
+
+
+// Maintenance Routes
+Route::prefix('maintenance')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [MaintenanceController::class, 'getData']);
+    Route::get('/filter-options', [MaintenanceController::class, 'getFilterOptions']);
+    Route::get('/export', [MaintenanceController::class, 'export']);
+});

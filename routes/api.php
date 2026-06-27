@@ -202,3 +202,32 @@ Route::prefix('rc-expenditure')->middleware('auth:sanctum')->group(function () {
     Route::get('/filter-options', [RCExpenditureController::class, 'getFilterOptions']);
     Route::get('/export', [RCExpenditureController::class, 'export']);
 });
+
+use App\Http\Controllers\API\ODDController;
+
+// ODD (Other Department Debits) Routes
+Route::prefix('odd')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [ODDController::class, 'getData']);
+    Route::get('/filter-options', [ODDController::class, 'getFilterOptions']);
+    Route::get('/export', [ODDController::class, 'export']);
+});
+
+use App\Http\Controllers\API\ODSController;
+
+// ODS (Other Department Surcharge) Routes
+Route::prefix('ods')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [ODSController::class, 'getData']);
+    Route::get('/filter-options', [ODSController::class, 'getFilterOptions']);
+    Route::get('/export', [ODSController::class, 'export']);
+});
+
+
+use App\Http\Controllers\API\JournalSummaryController;
+
+
+// Journal Summary Routes
+Route::prefix('journal-summary')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [JournalSummaryController::class, 'getData']);
+    Route::get('/filter-options', [JournalSummaryController::class, 'getFilterOptions']);
+    Route::get('/export', [JournalSummaryController::class, 'export']);
+});

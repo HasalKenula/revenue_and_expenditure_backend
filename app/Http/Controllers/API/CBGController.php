@@ -144,6 +144,7 @@ class CBGController extends Controller
 
     /**
      * Process rows for a specific ministry
+     * Now calculates Debit = DR(1000) - CR(2000)
      */
     private function processRows($rows, $year, $monthsToInclude)
     {
@@ -157,8 +158,9 @@ class CBGController extends Controller
             $cumulativeOtherDebit = 0;
 
             foreach ($monthsToInclude as $currentMonth) {
-                // Get Debit (trno == head)
-                $debit = MonthlyFincance::whereYear('created_at', $year)
+                // ========== DEBIT (trno == head) ==========
+                // Get DR amount (code 1000)
+                $debitDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', $row['trno'])
                     ->where('head', $row['trno'])
@@ -170,8 +172,25 @@ class CBGController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get Other Debit (trno != head)
-                $otherDebit = MonthlyFincance::whereYear('created_at', $year)
+                // Get CR amount (code 2000)
+                $debitCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $currentMonth)
+                    ->where('trno', $row['trno'])
+                    ->where('head', $row['trno'])
+                    ->where('program', $row['program'])
+                    ->where('project', $row['project'])
+                    ->where('sub_project', $row['sub_project'])
+                    ->where('object', $row['object'])
+                    ->where('dr_cr_code', 2000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                // Net Debit = DR - CR
+                $netDebit = $debitDR - $debitCR;
+
+                // ========== OTHER DEBIT (trno != head) ==========
+                // Get DR amount (code 1000)
+                $otherDebitDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', '!=', $row['trno'])
                     ->where('head', $row['trno'])
@@ -183,8 +202,24 @@ class CBGController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $cumulativeDebit += $debit;
-                $cumulativeOtherDebit += $otherDebit;
+                // Get CR amount (code 2000)
+                $otherDebitCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $currentMonth)
+                    ->where('trno', '!=', $row['trno'])
+                    ->where('head', $row['trno'])
+                    ->where('program', $row['program'])
+                    ->where('project', $row['project'])
+                    ->where('sub_project', $row['sub_project'])
+                    ->where('object', $row['object'])
+                    ->where('dr_cr_code', 2000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                // Net Other Debit = DR - CR
+                $netOtherDebit = $otherDebitDR - $otherDebitCR;
+
+                $cumulativeDebit += $netDebit;
+                $cumulativeOtherDebit += $netOtherDebit;
             }
 
             $totalExpenditure = $cumulativeDebit + $cumulativeOtherDebit;
@@ -409,7 +444,9 @@ class CBGController extends Controller
             $cumulativeOtherDebit = 0;
 
             foreach ($monthsToInclude as $currentMonth) {
-                $debit = MonthlyFincance::whereYear('created_at', $year)
+                // ========== DEBIT (trno == head) ==========
+                // Get DR amount (code 1000)
+                $debitDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', $row['trno'])
                     ->where('head', $row['trno'])
@@ -421,7 +458,25 @@ class CBGController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $otherDebit = MonthlyFincance::whereYear('created_at', $year)
+                // Get CR amount (code 2000)
+                $debitCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $currentMonth)
+                    ->where('trno', $row['trno'])
+                    ->where('head', $row['trno'])
+                    ->where('program', $row['program'])
+                    ->where('project', $row['project'])
+                    ->where('sub_project', $row['sub_project'])
+                    ->where('object', $row['object'])
+                    ->where('dr_cr_code', 2000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                // Net Debit = DR - CR
+                $netDebit = $debitDR - $debitCR;
+
+                // ========== OTHER DEBIT (trno != head) ==========
+                // Get DR amount (code 1000)
+                $otherDebitDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', '!=', $row['trno'])
                     ->where('head', $row['trno'])
@@ -433,8 +488,24 @@ class CBGController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                $cumulativeDebit += $debit;
-                $cumulativeOtherDebit += $otherDebit;
+                // Get CR amount (code 2000)
+                $otherDebitCR = MonthlyFincance::whereYear('created_at', $year)
+                    ->where('month', $currentMonth)
+                    ->where('trno', '!=', $row['trno'])
+                    ->where('head', $row['trno'])
+                    ->where('program', $row['program'])
+                    ->where('project', $row['project'])
+                    ->where('sub_project', $row['sub_project'])
+                    ->where('object', $row['object'])
+                    ->where('dr_cr_code', 2000)
+                    ->where('dr_cr', 'CR')
+                    ->sum('cash_xe');
+
+                // Net Other Debit = DR - CR
+                $netOtherDebit = $otherDebitDR - $otherDebitCR;
+
+                $cumulativeDebit += $netDebit;
+                $cumulativeOtherDebit += $netOtherDebit;
             }
 
             $totalExpenditure = $cumulativeDebit + $cumulativeOtherDebit;

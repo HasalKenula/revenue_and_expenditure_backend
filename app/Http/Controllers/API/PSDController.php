@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class PSDController extends Controller
 {
     /**
-     * Get PSD Report data with Main, Education, Animal, Agriculture and Land Ministries
+     * Get PSD Report data with all six ministries
      */
     public function getData(Request $request)
     {
@@ -95,12 +95,19 @@ class PSDController extends Controller
                 ['trno' => 308, 'program' => 50, 'project' => 3, 'sub_project' => 1, 'object' => 2502, 'subject_name' => 'cc']
             ];
 
+            // ========== MAIN SECRETARY MINISTRY ROWS (TRNO = 320) ==========
+            $mainSecretaryRows = [
+                ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 3, 'object' => 2502, 'subject_name' => 'aa'],
+                ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 5, 'object' => 2502, 'subject_name' => 'bb']
+            ];
+
             // Process all ministries
             $mainMinistryResults = $this->processRows($mainMinistryRows, $year, $monthsToInclude);
             $educationMinistryResults = $this->processRows($educationMinistryRows, $year, $monthsToInclude);
             $animalMinistryResults = $this->processRows($animalMinistryRows, $year, $monthsToInclude);
             $agricultureMinistryResults = $this->processRows($agricultureMinistryRows, $year, $monthsToInclude);
             $landMinistryResults = $this->processRows($landMinistryRows, $year, $monthsToInclude);
+            $mainSecretaryResults = $this->processRows($mainSecretaryRows, $year, $monthsToInclude);
 
             // Get month names for display
             $monthNames = $this->getMonthNames();
@@ -117,6 +124,7 @@ class PSDController extends Controller
                     'animal_ministry' => $animalMinistryResults,
                     'agriculture_ministry' => $agricultureMinistryResults,
                     'land_ministry' => $landMinistryResults,
+                    'main_secretary' => $mainSecretaryResults,
                     'months' => $monthsToInclude,
                     'month_names' => $monthNamesToShow,
                     'filters' => [
@@ -367,6 +375,11 @@ class PSDController extends Controller
                 ['trno' => 308, 'program' => 50, 'project' => 3, 'sub_project' => 1, 'object' => 2502, 'subject_name' => 'cc']
             ];
 
+            $mainSecretaryRows = [
+                ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 3, 'object' => 2502, 'subject_name' => 'aa'],
+                ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 5, 'object' => 2502, 'subject_name' => 'bb']
+            ];
+
             $exportData = [];
 
             // Add Main Ministry data
@@ -397,6 +410,12 @@ class PSDController extends Controller
             $landData = $this->processRowsForExport($landMinistryRows, $year, $monthsToInclude);
             $exportData[] = ['Table: LAND MINISTRY'];
             $exportData = array_merge($exportData, $landData);
+            $exportData[] = [];
+
+            // Add Main Secretary data
+            $mainSecretaryData = $this->processRowsForExport($mainSecretaryRows, $year, $monthsToInclude);
+            $exportData[] = ['Table: MAIN SECRETARY MINISTRY'];
+            $exportData = array_merge($exportData, $mainSecretaryData);
 
             return response()->json([
                 'success' => true,

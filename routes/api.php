@@ -274,3 +274,12 @@ Route::prefix('cbg')->middleware('auth:sanctum')->group(function () {
     Route::get('/filter-options', [CBGController::class, 'getFilterOptions']);
     Route::get('/export', [CBGController::class, 'export']);
 });
+
+use App\Http\Controllers\API\PSDController;
+
+// PSD Routes
+Route::prefix('psd')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [PSDController::class, 'getData']);
+    Route::get('/filter-options', [PSDController::class, 'getFilterOptions']);
+    Route::get('/export', [PSDController::class, 'export']);
+});

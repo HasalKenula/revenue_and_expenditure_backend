@@ -263,3 +263,34 @@ Route::prefix('maintenance')->middleware('auth:sanctum')->group(function () {
     Route::get('/filter-options', [MaintenanceController::class, 'getFilterOptions']);
     Route::get('/export', [MaintenanceController::class, 'export']);
 });
+
+
+use App\Http\Controllers\API\CBGController;
+
+
+// CBG (Main Ministry) Routes
+Route::prefix('cbg')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [CBGController::class, 'getData']);
+    Route::get('/filter-options', [CBGController::class, 'getFilterOptions']);
+    Route::get('/export', [CBGController::class, 'export']);
+});
+
+use App\Http\Controllers\API\PSDController;
+
+// PSD Routes
+Route::prefix('psd')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [PSDController::class, 'getData']);
+    Route::get('/filter-options', [PSDController::class, 'getFilterOptions']);
+    Route::get('/export', [PSDController::class, 'export']);
+});
+
+
+
+use App\Http\Controllers\API\DashboardController;
+
+
+// Dashboard Routes
+Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [DashboardController::class, 'getDashboardData']);
+    Route::get('/filter-options', [DashboardController::class, 'getFilterOptions']);
+});

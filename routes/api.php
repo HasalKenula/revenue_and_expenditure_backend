@@ -231,3 +231,35 @@ Route::prefix('journal-summary')->middleware('auth:sanctum')->group(function () 
     Route::get('/filter-options', [JournalSummaryController::class, 'getFilterOptions']);
     Route::get('/export', [JournalSummaryController::class, 'export']);
 });
+
+
+use App\Http\Controllers\API\MainJournalController;
+
+
+// Main Journal Routes
+Route::prefix('main-journal')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [MainJournalController::class, 'getData']);
+    Route::get('/filter-options', [MainJournalController::class, 'getFilterOptions']);
+    Route::get('/export', [MainJournalController::class, 'export']);
+});
+
+use App\Http\Controllers\API\ImprestBalanceController;
+
+
+// Imprest Balance Routes
+Route::prefix('imprest-balance')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [ImprestBalanceController::class, 'getData']);
+    Route::get('/filter-options', [ImprestBalanceController::class, 'getFilterOptions']);
+    Route::get('/export', [ImprestBalanceController::class, 'export']);
+});
+
+
+use App\Http\Controllers\API\MaintenanceController;
+
+
+// Maintenance Routes
+Route::prefix('maintenance')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [MaintenanceController::class, 'getData']);
+    Route::get('/filter-options', [MaintenanceController::class, 'getFilterOptions']);
+    Route::get('/export', [MaintenanceController::class, 'export']);
+});

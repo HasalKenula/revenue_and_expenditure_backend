@@ -283,3 +283,14 @@ Route::prefix('psd')->middleware('auth:sanctum')->group(function () {
     Route::get('/filter-options', [PSDController::class, 'getFilterOptions']);
     Route::get('/export', [PSDController::class, 'export']);
 });
+
+
+
+use App\Http\Controllers\API\DashboardController;
+
+
+// Dashboard Routes
+Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [DashboardController::class, 'getDashboardData']);
+    Route::get('/filter-options', [DashboardController::class, 'getFilterOptions']);
+});

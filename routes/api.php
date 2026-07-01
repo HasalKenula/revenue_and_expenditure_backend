@@ -324,6 +324,7 @@ use App\Http\Controllers\API\MaintenanceController;
 use App\Http\Controllers\API\CBGController;
 use App\Http\Controllers\API\PSDController;
 use App\Http\Controllers\API\DashboardController;
+use App\Http\Controllers\API\UpkeepController;
 
 /*
 |--------------------------------------------------------------------------
@@ -594,5 +595,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/data', [DashboardController::class, 'getDashboardData']);
         Route::get('/filter-options', [DashboardController::class, 'getFilterOptions']);
     });
+
+   
+
+
+// Upkeep Routes
+Route::prefix('upkeep')->group(function () {
+    Route::get('/data', [UpkeepController::class, 'getData']);
+    Route::get('/filter-options', [UpkeepController::class, 'getFilterOptions']);
+    Route::get('/export', [UpkeepController::class, 'export']);
+});
+
  });
 }); // End of auth:sanctum middleware group

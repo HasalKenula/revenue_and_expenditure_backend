@@ -326,6 +326,7 @@ use App\Http\Controllers\API\PSDController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\UpkeepController;
 use App\Http\Controllers\API\HeadInfoController;
+use App\Http\Controllers\API\ItemCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -618,6 +619,21 @@ Route::prefix('head-info')->group(function () {
     Route::put('/{head}', [HeadInfoController::class, 'update']);       // Update head
     Route::delete('/{head}', [HeadInfoController::class, 'destroy']);   // Delete head
     Route::delete('/delete-multiple', [HeadInfoController::class, 'destroyMultiple']); // Delete multiple
+});
+
+
+    // Item Code routes
+Route::prefix('item-code')->group(function () {
+    Route::get('/', [ItemCodeController::class, 'index']);              // Get all items
+    Route::get('/list', [ItemCodeController::class, 'getItemsList']);   // Get items for dropdown
+    Route::get('/filter-options', [ItemCodeController::class, 'getFilterOptions']); // Filter options
+    Route::get('/years-summary', [ItemCodeController::class, 'getYearsSummary']); // Years summary
+    Route::get('/search', [ItemCodeController::class, 'search']);       // Search items
+    Route::get('/{item}', [ItemCodeController::class, 'show']);         // Get single item
+    Route::post('/', [ItemCodeController::class, 'store']);             // Create item
+    Route::put('/{item}', [ItemCodeController::class, 'update']);       // Update item
+    Route::delete('/{item}', [ItemCodeController::class, 'destroy']);   // Delete item
+    Route::delete('/delete-multiple', [ItemCodeController::class, 'destroyMultiple']); // Delete multiple
 });
 
  });

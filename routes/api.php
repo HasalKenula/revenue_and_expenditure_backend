@@ -325,6 +325,7 @@ use App\Http\Controllers\API\CBGController;
 use App\Http\Controllers\API\PSDController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\UpkeepController;
+use App\Http\Controllers\API\HeadInfoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -604,6 +605,19 @@ Route::prefix('upkeep')->group(function () {
     Route::get('/data', [UpkeepController::class, 'getData']);
     Route::get('/filter-options', [UpkeepController::class, 'getFilterOptions']);
     Route::get('/export', [UpkeepController::class, 'export']);
+});
+
+    
+// Head Info routes
+Route::prefix('head-info')->group(function () {
+    Route::get('/', [HeadInfoController::class, 'index']);              // Get all heads
+    Route::get('/list', [HeadInfoController::class, 'getHeadsList']);   // Get heads for dropdown
+    Route::get('/search', [HeadInfoController::class, 'search']);       // Search heads
+    Route::get('/{head}', [HeadInfoController::class, 'show']);         // Get single head
+    Route::post('/', [HeadInfoController::class, 'store']);             // Create head
+    Route::put('/{head}', [HeadInfoController::class, 'update']);       // Update head
+    Route::delete('/{head}', [HeadInfoController::class, 'destroy']);   // Delete head
+    Route::delete('/delete-multiple', [HeadInfoController::class, 'destroyMultiple']); // Delete multiple
 });
 
  });

@@ -327,6 +327,7 @@ use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\UpkeepController;
 use App\Http\Controllers\API\HeadInfoController;
 use App\Http\Controllers\API\ItemCodeController;
+use App\Http\Controllers\API\EstimateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -634,6 +635,20 @@ Route::prefix('item-code')->group(function () {
     Route::put('/{item}', [ItemCodeController::class, 'update']);       // Update item
     Route::delete('/{item}', [ItemCodeController::class, 'destroy']);   // Delete item
     Route::delete('/delete-multiple', [ItemCodeController::class, 'destroyMultiple']); // Delete multiple
+});
+
+
+Route::prefix('estimates')->group(function () {
+    Route::get('/', [EstimateController::class, 'index']);
+    Route::get('/filter-options', [EstimateController::class, 'getFilterOptions']);
+    Route::get('/summary', [EstimateController::class, 'getSummary']);
+    Route::get('/export', [EstimateController::class, 'export']);
+    Route::get('/{id}', [EstimateController::class, 'show']);
+    Route::post('/', [EstimateController::class, 'store']);
+    Route::post('/import', [EstimateController::class, 'import']);
+    Route::put('/{id}', [EstimateController::class, 'update']);
+    Route::delete('/{id}', [EstimateController::class, 'destroy']);
+    Route::delete('/delete-multiple', [EstimateController::class, 'destroyMultiple']);
 });
 
  });

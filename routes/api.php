@@ -328,6 +328,7 @@ use App\Http\Controllers\API\UpkeepController;
 use App\Http\Controllers\API\HeadInfoController;
 use App\Http\Controllers\API\ItemCodeController;
 use App\Http\Controllers\API\EstimateController;
+use App\Http\Controllers\API\TreasuryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -649,6 +650,21 @@ Route::prefix('estimates')->group(function () {
     Route::put('/{id}', [EstimateController::class, 'update']);
     Route::delete('/{id}', [EstimateController::class, 'destroy']);
     Route::delete('/delete-multiple', [EstimateController::class, 'destroyMultiple']);
+});
+
+
+// Treasury routes
+Route::prefix('treasury')->group(function () {
+    Route::get('/', [TreasuryController::class, 'index']);
+    Route::get('/filter-options', [TreasuryController::class, 'getFilterOptions']);
+    Route::get('/summary', [TreasuryController::class, 'getSummary']);
+    Route::get('/export', [TreasuryController::class, 'export']);
+    Route::get('/{id}', [TreasuryController::class, 'show']);
+    Route::post('/', [TreasuryController::class, 'store']);
+    Route::post('/import', [TreasuryController::class, 'import']);
+    Route::put('/{id}', [TreasuryController::class, 'update']);
+    Route::delete('/{id}', [TreasuryController::class, 'destroy']);
+    Route::delete('/delete-multiple', [TreasuryController::class, 'destroyMultiple']);
 });
 
  });

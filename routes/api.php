@@ -329,7 +329,7 @@ use App\Http\Controllers\API\HeadInfoController;
 use App\Http\Controllers\API\ItemCodeController;
 use App\Http\Controllers\API\EstimateController;
 use App\Http\Controllers\API\TreasuryController;
-
+use App\Http\Controllers\API\NetRevenueController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -665,6 +665,14 @@ Route::prefix('treasury')->group(function () {
     Route::put('/{id}', [TreasuryController::class, 'update']);
     Route::delete('/{id}', [TreasuryController::class, 'destroy']);
     Route::delete('/delete-multiple', [TreasuryController::class, 'destroyMultiple']);
+});
+
+
+// Net Revenue Report routes
+Route::prefix('net-revenue')->group(function () {
+    Route::get('/data', [NetRevenueController::class, 'getData']);
+    Route::get('/filter-options', [NetRevenueController::class, 'getFilterOptions']);
+    Route::get('/export', [NetRevenueController::class, 'export']);
 });
 
  });

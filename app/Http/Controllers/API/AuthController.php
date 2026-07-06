@@ -265,8 +265,9 @@ class AuthController extends Controller
             ], 400);
         }
 
-        $user = User::where('email', $request->email)->first();
-
+        //$user = User::where('email', $request->email)->first();
+        // Case-sensitive email search for MySQL
+         $user = User::whereRaw('BINARY `email` = ?', [$request->email])->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,

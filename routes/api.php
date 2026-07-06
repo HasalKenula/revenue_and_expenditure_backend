@@ -375,7 +375,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ============================================
     // BUDGET ROUTES
     // ============================================
-      Route::middleware(['role:admin'])->group(function () {
+      Route::middleware(['role:revenue_manager,expenditure_manager'])->group(function () {
     Route::prefix('budget')->group(function () {
         Route::get('/records', [BudgetController::class, 'index']);
         Route::get('/records/{id}', [BudgetController::class, 'show']);

@@ -32,6 +32,8 @@ use App\Http\Controllers\API\EstimateController;
 use App\Http\Controllers\API\TreasuryController;
 use App\Http\Controllers\API\NetRevenueController;
 use App\Http\Controllers\API\QuarterRevenueController;
+use App\Http\Controllers\API\RevenueMonthlyController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -385,6 +387,13 @@ Route::prefix('quarter-revenue')->group(function () {
     Route::get('/data', [QuarterRevenueController::class, 'getData']);
     Route::get('/filter-options', [QuarterRevenueController::class, 'getFilterOptions']);
     Route::get('/export-csv', [QuarterRevenueController::class, 'exportCsv']);
+});
+
+// Revenue Monthly Report routes
+Route::prefix('revenue-monthly')->group(function () {
+    Route::get('/data', [RevenueMonthlyController::class, 'getData']);
+    Route::get('/filter-options', [RevenueMonthlyController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueMonthlyController::class, 'exportCsv']);
 });
 
  });

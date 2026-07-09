@@ -33,6 +33,7 @@ use App\Http\Controllers\API\TreasuryController;
 use App\Http\Controllers\API\NetRevenueController;
 use App\Http\Controllers\API\QuarterRevenueController;
 use App\Http\Controllers\API\RevenueMonthlyController;
+use App\Http\Controllers\API\MonthlySummaryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -394,6 +395,13 @@ Route::prefix('revenue-monthly')->group(function () {
     Route::get('/data', [RevenueMonthlyController::class, 'getData']);
     Route::get('/filter-options', [RevenueMonthlyController::class, 'getFilterOptions']);
     Route::get('/export-csv', [RevenueMonthlyController::class, 'exportCsv']);
+});
+
+// Monthly Summary Report routes
+Route::prefix('monthly-summary')->group(function () {
+    Route::get('/data', [MonthlySummaryController::class, 'getData']);
+    Route::get('/filter-options', [MonthlySummaryController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [MonthlySummaryController::class, 'exportCsv']);
 });
 
  });

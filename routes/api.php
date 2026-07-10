@@ -34,6 +34,7 @@ use App\Http\Controllers\API\NetRevenueController;
 use App\Http\Controllers\API\QuarterRevenueController;
 use App\Http\Controllers\API\RevenueMonthlyController;
 use App\Http\Controllers\API\MonthlySummaryController;
+use App\Http\Controllers\API\TaxRevenueController;
 
 /*
 |--------------------------------------------------------------------------
@@ -402,6 +403,13 @@ Route::prefix('monthly-summary')->group(function () {
     Route::get('/data', [MonthlySummaryController::class, 'getData']);
     Route::get('/filter-options', [MonthlySummaryController::class, 'getFilterOptions']);
     Route::get('/export-csv', [MonthlySummaryController::class, 'exportCsv']);
+});
+
+// Tax Revenue Report routes
+Route::prefix('tax-revenue')->group(function () {
+    Route::get('/data', [TaxRevenueController::class, 'getData']);
+    Route::get('/filter-options', [TaxRevenueController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [TaxRevenueController::class, 'exportCsv']);
 });
 
  });

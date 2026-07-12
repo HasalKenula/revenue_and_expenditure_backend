@@ -36,6 +36,7 @@ use App\Http\Controllers\API\RevenueMonthlyController;
 use App\Http\Controllers\API\MonthlySummaryController;
 use App\Http\Controllers\API\TaxRevenueController;
 use App\Http\Controllers\API\NonTaxRevenueController;
+use App\Http\Controllers\API\RevenueCollectionAccountController;
 
 /*
 |--------------------------------------------------------------------------
@@ -418,6 +419,14 @@ Route::prefix('non-tax-revenue')->group(function () {
     Route::get('/data', [NonTaxRevenueController::class, 'getData']);
     Route::get('/filter-options', [NonTaxRevenueController::class, 'getFilterOptions']);
     Route::get('/export-csv', [NonTaxRevenueController::class, 'exportCsv']);
+});
+
+
+// Revenue Collection Account Report routes
+Route::prefix('revenue-collection-account')->group(function () {
+    Route::get('/data', [RevenueCollectionAccountController::class, 'getData']);
+    Route::get('/filter-options', [RevenueCollectionAccountController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueCollectionAccountController::class, 'exportCsv']);
 });
 
  });

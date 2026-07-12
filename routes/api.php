@@ -37,6 +37,7 @@ use App\Http\Controllers\API\MonthlySummaryController;
 use App\Http\Controllers\API\TaxRevenueController;
 use App\Http\Controllers\API\NonTaxRevenueController;
 use App\Http\Controllers\API\RevenueCollectionAccountController;
+use App\Http\Controllers\API\RevenueCrossEntryAccountController;
 
 /*
 |--------------------------------------------------------------------------
@@ -427,6 +428,13 @@ Route::prefix('revenue-collection-account')->group(function () {
     Route::get('/data', [RevenueCollectionAccountController::class, 'getData']);
     Route::get('/filter-options', [RevenueCollectionAccountController::class, 'getFilterOptions']);
     Route::get('/export-csv', [RevenueCollectionAccountController::class, 'exportCsv']);
+});
+
+// Revenue Cross Entry Account Report routes
+Route::prefix('revenue-cross-entry-account')->group(function () {
+    Route::get('/data', [RevenueCrossEntryAccountController::class, 'getData']);
+    Route::get('/filter-options', [RevenueCrossEntryAccountController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueCrossEntryAccountController::class, 'exportCsv']);
 });
 
  });

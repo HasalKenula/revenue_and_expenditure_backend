@@ -31,6 +31,15 @@ use App\Http\Controllers\API\ItemCodeController;
 use App\Http\Controllers\API\EstimateController;
 use App\Http\Controllers\API\TreasuryController;
 use App\Http\Controllers\API\NetRevenueController;
+use App\Http\Controllers\API\QuarterRevenueController;
+use App\Http\Controllers\API\RevenueMonthlyController;
+use App\Http\Controllers\API\MonthlySummaryController;
+use App\Http\Controllers\API\TaxRevenueController;
+use App\Http\Controllers\API\NonTaxRevenueController;
+use App\Http\Controllers\API\RevenueCollectionAccountController;
+use App\Http\Controllers\API\RevenueCrossEntryAccountController;
+use App\Http\Controllers\API\RevenueRefundAccountController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -374,6 +383,66 @@ Route::prefix('net-revenue')->group(function () {
     Route::get('/data', [NetRevenueController::class, 'getData']);
     Route::get('/filter-options', [NetRevenueController::class, 'getFilterOptions']);
     Route::get('/export', [NetRevenueController::class, 'export']);
+});
+
+
+
+
+// Quarter Revenue Report routes
+Route::prefix('quarter-revenue')->group(function () {
+    Route::get('/data', [QuarterRevenueController::class, 'getData']);
+    Route::get('/filter-options', [QuarterRevenueController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [QuarterRevenueController::class, 'exportCsv']);
+});
+
+// Revenue Monthly Report routes
+Route::prefix('revenue-monthly')->group(function () {
+    Route::get('/data', [RevenueMonthlyController::class, 'getData']);
+    Route::get('/filter-options', [RevenueMonthlyController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueMonthlyController::class, 'exportCsv']);
+});
+
+// Monthly Summary Report routes
+Route::prefix('monthly-summary')->group(function () {
+    Route::get('/data', [MonthlySummaryController::class, 'getData']);
+    Route::get('/filter-options', [MonthlySummaryController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [MonthlySummaryController::class, 'exportCsv']);
+});
+
+// Tax Revenue Report routes
+Route::prefix('tax-revenue')->group(function () {
+    Route::get('/data', [TaxRevenueController::class, 'getData']);
+    Route::get('/filter-options', [TaxRevenueController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [TaxRevenueController::class, 'exportCsv']);
+});
+
+// Non Tax Revenue Report routes
+Route::prefix('non-tax-revenue')->group(function () {
+    Route::get('/data', [NonTaxRevenueController::class, 'getData']);
+    Route::get('/filter-options', [NonTaxRevenueController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [NonTaxRevenueController::class, 'exportCsv']);
+});
+
+
+// Revenue Collection Account Report routes
+Route::prefix('revenue-collection-account')->group(function () {
+    Route::get('/data', [RevenueCollectionAccountController::class, 'getData']);
+    Route::get('/filter-options', [RevenueCollectionAccountController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueCollectionAccountController::class, 'exportCsv']);
+});
+
+// Revenue Cross Entry Account Report routes
+Route::prefix('revenue-cross-entry-account')->group(function () {
+    Route::get('/data', [RevenueCrossEntryAccountController::class, 'getData']);
+    Route::get('/filter-options', [RevenueCrossEntryAccountController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueCrossEntryAccountController::class, 'exportCsv']);
+});
+
+// Revenue Refund Account Report routes
+Route::prefix('revenue-refund-account')->group(function () {
+    Route::get('/data', [RevenueRefundAccountController::class, 'getData']);
+    Route::get('/filter-options', [RevenueRefundAccountController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueRefundAccountController::class, 'exportCsv']);
 });
 
  });

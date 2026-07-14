@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('opening_balances', function (Blueprint $table) {
             $table->id();
-             $table->integer('head');
+            $table->integer('head');
             $table->year('year');
             $table->decimal('opening_balance', 15, 2);
             $table->timestamps();

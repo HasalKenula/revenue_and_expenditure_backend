@@ -40,6 +40,7 @@ use App\Http\Controllers\API\RevenueCollectionAccountController;
 use App\Http\Controllers\API\RevenueCrossEntryAccountController;
 use App\Http\Controllers\API\RevenueRefundAccountController;
 use App\Http\Controllers\API\RevenueCrossEntryByTrnoController;
+use App\Http\Controllers\API\RevenueRefundByTrnoController;
 
 
 /*
@@ -452,6 +453,13 @@ Route::prefix('revenue-cross-entry-by-trno')->group(function () {
     Route::get('/data', [RevenueCrossEntryByTrnoController::class, 'getData']);
     Route::get('/filter-options', [RevenueCrossEntryByTrnoController::class, 'getFilterOptions']);
     Route::get('/export-csv', [RevenueCrossEntryByTrnoController::class, 'exportCsv']);
+});
+
+// Revenue Refund by TRNO Report routes
+Route::prefix('revenue-refund-by-trno')->group(function () {
+    Route::get('/data', [RevenueRefundByTrnoController::class, 'getData']);
+    Route::get('/filter-options', [RevenueRefundByTrnoController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [RevenueRefundByTrnoController::class, 'exportCsv']);
 });
 
  });

@@ -43,6 +43,7 @@ use App\Http\Controllers\API\RevenueCrossEntryByTrnoController;
 use App\Http\Controllers\API\RevenueRefundByTrnoController;
 use App\Http\Controllers\API\StampDutyMonthlyController;
 use App\Http\Controllers\API\StampDutySummaryController;
+use App\Http\Controllers\API\LocalGovTransferMonthlyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -474,6 +475,13 @@ Route::prefix('stamp-duty-summary')->group(function () {
     Route::get('/data', [StampDutySummaryController::class, 'getData']);
     Route::get('/filter-options', [StampDutySummaryController::class, 'getFilterOptions']);
     Route::get('/export', [StampDutySummaryController::class, 'export']);
+});
+
+// Local Gov Transfer Monthly Routes
+Route::prefix('local-gov-transfer-monthly')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [LocalGovTransferMonthlyController::class, 'getData']);
+    Route::get('/filter-options', [LocalGovTransferMonthlyController::class, 'getFilterOptions']);
+    Route::get('/export', [LocalGovTransferMonthlyController::class, 'export']);
 });
 
  });

@@ -41,7 +41,7 @@ use App\Http\Controllers\API\RevenueCrossEntryAccountController;
 use App\Http\Controllers\API\RevenueRefundAccountController;
 use App\Http\Controllers\API\RevenueCrossEntryByTrnoController;
 use App\Http\Controllers\API\RevenueRefundByTrnoController;
-
+use App\Http\Controllers\API\StampDutyMonthlyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -323,7 +323,7 @@ Route::prefix('upkeep')->group(function () {
     Route::get('/export', [UpkeepController::class, 'export']);
 });
 
-    
+
 // Head Info routes
 Route::prefix('head-info')->group(function () {
     Route::get('/', [HeadInfoController::class, 'index']);              // Get all heads
@@ -460,6 +460,12 @@ Route::prefix('revenue-refund-by-trno')->group(function () {
     Route::get('/data', [RevenueRefundByTrnoController::class, 'getData']);
     Route::get('/filter-options', [RevenueRefundByTrnoController::class, 'getFilterOptions']);
     Route::get('/export-csv', [RevenueRefundByTrnoController::class, 'exportCsv']);
+});
+
+Route::prefix('stamp-duty-monthly')->group(function () {
+    Route::get('/data', [StampDutyMonthlyController::class, 'getData']);
+    Route::get('/filter-options', [StampDutyMonthlyController::class, 'getFilterOptions']);
+    Route::get('/export', [StampDutyMonthlyController::class, 'export']);
 });
 
  });

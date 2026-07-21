@@ -45,6 +45,7 @@ use App\Http\Controllers\API\StampDutyMonthlyController;
 use App\Http\Controllers\API\StampDutySummaryController;
 use App\Http\Controllers\API\LocalGovTransferMonthlyController;
 use App\Http\Controllers\API\LocalGovTransferSummaryController;
+use App\Http\Controllers\API\UserMonthlyFinanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +87,35 @@ Route::middleware('auth:sanctum')->group(function () {
     // Test Route
     Route::get('/hello', function () {
         return response()->json(['message' => 'API is working!']);
+    });
+
+    // ============================================
+    // USER MONTHLY FINANCE ROUTES
+    // Available to ALL authenticated users (user, revenue_manager, expenditure_manager)
+    // ============================================
+    Route::prefix('user-monthly-finance')->group(function () {
+        // Routes for all authenticated users
+        Route::get('/my-data', [UserMonthlyFinanceController::class, 'index']);
+        Route::get('/my-data/{id}', [UserMonthlyFinanceController::class, 'show']);
+        Route::post('/import', [UserMonthlyFinanceController::class, 'import']);
+        
+        Route::get('/filter-options', [UserMonthlyFinanceController::class, 'getFilterOptions']);
+        Route::get('/summary', [UserMonthlyFinanceController::class, 'getSummary']);
+        Route::get('/export', [UserMonthlyFinanceController::class, 'export']);
+        Route::get('/check-uploads', [UserMonthlyFinanceController::class, 'checkUserUploads']);
+        
+        // Expenditure Manager only routes
+        Route::middleware(['role:expenditure_manager'])->group(function () {
+            Route::get('/all-users-data', [UserMonthlyFinanceController::class, 'getAllUsersData']);
+            Route::post('/approve/{id}', [UserMonthlyFinanceController::class, 'approve']);
+            Route::post('/approve-multiple', [UserMonthlyFinanceController::class, 'approveMultiple']);
+           // Delete ALL data for a user (including approved)
+            Route::delete('/delete-user-data/{userId}', [UserMonthlyFinanceController::class, 'deleteUserData']);
+            // Delete only unapproved data for a user
+            Route::delete('/delete-unapproved-user-data/{userId}', [UserMonthlyFinanceController::class, 'deleteUnapprovedUserData']);
+        
+        
+        });
     });
 
     // ============================================

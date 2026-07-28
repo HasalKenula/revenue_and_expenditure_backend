@@ -49,6 +49,7 @@ use App\Http\Controllers\API\UserMonthlyFinanceController;
 use App\Http\Controllers\API\AccountNumberController;
 use App\Http\Controllers\API\RevenueAccountDataController;
 use App\Http\Controllers\API\RevenueCollectionAccountNumberController;
+use App\Http\Controllers\API\RevenueReceiptsInCashController;
 
 /*
 |--------------------------------------------------------------------------
@@ -557,6 +558,15 @@ Route::prefix('revenue-collection-account-number')->group(function () {
     Route::get('/data', [RevenueCollectionAccountNumberController::class, 'getData']);
     Route::get('/filter-options', [RevenueCollectionAccountNumberController::class, 'getFilterOptionsEndpoint']);
     Route::get('/export', [RevenueCollectionAccountNumberController::class, 'export']);
+});
+
+
+
+// Revenue Receipts In Cash Routes
+Route::prefix('revenue-receipts-in-cash')->group(function () {
+    Route::get('/data', [RevenueReceiptsInCashController::class, 'getData']);
+    Route::get('/filter-options', [RevenueReceiptsInCashController::class, 'getFilterOptions']);
+    Route::get('/export', [RevenueReceiptsInCashController::class, 'export']);
 });
 
  });

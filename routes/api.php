@@ -46,6 +46,7 @@ use App\Http\Controllers\API\StampDutySummaryController;
 use App\Http\Controllers\API\LocalGovTransferMonthlyController;
 use App\Http\Controllers\API\LocalGovTransferSummaryController;
 use App\Http\Controllers\API\UserMonthlyFinanceController;
+use App\Http\Controllers\API\AccountNumberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -521,6 +522,18 @@ Route::prefix('local-gov-transfer-summary')->middleware('auth:sanctum')->group(f
     Route::get('/filter-options', [LocalGovTransferSummaryController::class, 'getFilterOptions']);
     Route::get('/export', [LocalGovTransferSummaryController::class, 'export']);
 });
+
+// Account Numbers Routes
+Route::prefix('account-numbers')->group(function () {
+    Route::get('/', [AccountNumberController::class, 'index']);
+    Route::get('/all', [AccountNumberController::class, 'getAll']);
+    Route::get('/{id}', [AccountNumberController::class, 'show']);
+    Route::post('/', [AccountNumberController::class, 'store']);
+    Route::put('/{id}', [AccountNumberController::class, 'update']);
+    Route::delete('/{id}', [AccountNumberController::class, 'destroy']);
+    Route::post('/delete-multiple', [AccountNumberController::class, 'destroyMultiple']);
+});
+
 
  });
 }); // End of auth:sanctum middleware group

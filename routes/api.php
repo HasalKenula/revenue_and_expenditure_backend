@@ -50,6 +50,7 @@ use App\Http\Controllers\API\AccountNumberController;
 use App\Http\Controllers\API\RevenueAccountDataController;
 use App\Http\Controllers\API\RevenueCollectionAccountNumberController;
 use App\Http\Controllers\API\RevenueReceiptsInCashController;
+use App\Http\Controllers\API\RevenueReceiptsInCashSummaryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -568,6 +569,15 @@ Route::prefix('revenue-receipts-in-cash')->group(function () {
     Route::get('/filter-options', [RevenueReceiptsInCashController::class, 'getFilterOptions']);
     Route::get('/export', [RevenueReceiptsInCashController::class, 'export']);
 });
+
+
+// Revenue Receipts In Cash Routes
+Route::prefix('revenue-receipts-in-cash-summary')->group(function () {
+   Route::get('/data', [RevenueReceiptsInCashSummaryController::class, 'getData']);
+   Route::get('/filter-options', [RevenueReceiptsInCashSummaryController::class, 'getFilterOptions']);
+   Route::get('/export', [RevenueReceiptsInCashSummaryController::class, 'export']);
+});
+
 
  });
 }); // End of auth:sanctum middleware group

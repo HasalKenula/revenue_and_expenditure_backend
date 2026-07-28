@@ -47,6 +47,7 @@ use App\Http\Controllers\API\LocalGovTransferMonthlyController;
 use App\Http\Controllers\API\LocalGovTransferSummaryController;
 use App\Http\Controllers\API\UserMonthlyFinanceController;
 use App\Http\Controllers\API\AccountNumberController;
+use App\Http\Controllers\API\RevenueAccountDataController;
 
 /*
 |--------------------------------------------------------------------------
@@ -533,6 +534,22 @@ Route::prefix('account-numbers')->group(function () {
     Route::delete('/{id}', [AccountNumberController::class, 'destroy']);
     Route::post('/delete-multiple', [AccountNumberController::class, 'destroyMultiple']);
 });
+
+
+Route::prefix('revenue-account-data')->group(function () {
+    Route::get('/', [RevenueAccountDataController::class, 'index']);
+    Route::get('/summary', [RevenueAccountDataController::class, 'getSummary']);
+    Route::get('/month-wise-summary', [RevenueAccountDataController::class, 'getMonthWiseSummary']);
+    Route::get('/by-account/{accountNumberId}', [RevenueAccountDataController::class, 'getByAccountNumber']);
+    Route::get('/revenue-code-options', [RevenueAccountDataController::class, 'getRevenueCodeOptions']); // Make sure this exists
+    Route::get('/search-revenue-codes', [RevenueAccountDataController::class, 'searchRevenueCodes']);
+    Route::get('/{id}', [RevenueAccountDataController::class, 'show']);
+    Route::post('/', [RevenueAccountDataController::class, 'store']);
+    Route::put('/{id}', [RevenueAccountDataController::class, 'update']);
+    Route::delete('/{id}', [RevenueAccountDataController::class, 'destroy']);
+    Route::post('/delete-multiple', [RevenueAccountDataController::class, 'destroyMultiple']);
+});
+
 
 
  });

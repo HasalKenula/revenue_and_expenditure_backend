@@ -41,7 +41,11 @@ use App\Http\Controllers\API\RevenueCrossEntryAccountController;
 use App\Http\Controllers\API\RevenueRefundAccountController;
 use App\Http\Controllers\API\RevenueCrossEntryByTrnoController;
 use App\Http\Controllers\API\RevenueRefundByTrnoController;
-
+use App\Http\Controllers\API\StampDutyMonthlyController;
+use App\Http\Controllers\API\StampDutySummaryController;
+use App\Http\Controllers\API\LocalGovTransferMonthlyController;
+use App\Http\Controllers\API\LocalGovTransferSummaryController;
+use App\Http\Controllers\API\UserMonthlyFinanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +87,35 @@ Route::middleware('auth:sanctum')->group(function () {
     // Test Route
     Route::get('/hello', function () {
         return response()->json(['message' => 'API is working!']);
+    });
+
+    // ============================================
+    // USER MONTHLY FINANCE ROUTES
+    // Available to ALL authenticated users (user, revenue_manager, expenditure_manager)
+    // ============================================
+    Route::prefix('user-monthly-finance')->group(function () {
+        // Routes for all authenticated users
+        Route::get('/my-data', [UserMonthlyFinanceController::class, 'index']);
+        Route::get('/my-data/{id}', [UserMonthlyFinanceController::class, 'show']);
+        Route::post('/import', [UserMonthlyFinanceController::class, 'import']);
+        
+        Route::get('/filter-options', [UserMonthlyFinanceController::class, 'getFilterOptions']);
+        Route::get('/summary', [UserMonthlyFinanceController::class, 'getSummary']);
+        Route::get('/export', [UserMonthlyFinanceController::class, 'export']);
+        Route::get('/check-uploads', [UserMonthlyFinanceController::class, 'checkUserUploads']);
+        
+        // Expenditure Manager only routes
+        Route::middleware(['role:expenditure_manager'])->group(function () {
+            Route::get('/all-users-data', [UserMonthlyFinanceController::class, 'getAllUsersData']);
+            Route::post('/approve/{id}', [UserMonthlyFinanceController::class, 'approve']);
+            Route::post('/approve-multiple', [UserMonthlyFinanceController::class, 'approveMultiple']);
+           // Delete ALL data for a user (including approved)
+            Route::delete('/delete-user-data/{userId}', [UserMonthlyFinanceController::class, 'deleteUserData']);
+            // Delete only unapproved data for a user
+            Route::delete('/delete-unapproved-user-data/{userId}', [UserMonthlyFinanceController::class, 'deleteUnapprovedUserData']);
+        
+        
+        });
     });
 
     // ============================================
@@ -323,7 +356,7 @@ Route::prefix('upkeep')->group(function () {
     Route::get('/export', [UpkeepController::class, 'export']);
 });
 
-    
+
 // Head Info routes
 Route::prefix('head-info')->group(function () {
     Route::get('/', [HeadInfoController::class, 'index']);              // Get all heads
@@ -460,6 +493,33 @@ Route::prefix('revenue-refund-by-trno')->group(function () {
     Route::get('/data', [RevenueRefundByTrnoController::class, 'getData']);
     Route::get('/filter-options', [RevenueRefundByTrnoController::class, 'getFilterOptions']);
     Route::get('/export-csv', [RevenueRefundByTrnoController::class, 'exportCsv']);
+});
+
+Route::prefix('stamp-duty-monthly')->group(function () {
+    Route::get('/data', [StampDutyMonthlyController::class, 'getData']);
+    Route::get('/filter-options', [StampDutyMonthlyController::class, 'getFilterOptions']);
+    Route::get('/export', [StampDutyMonthlyController::class, 'export']);
+});
+
+// Stamp Duty Summary Routes
+Route::prefix('stamp-duty-summary')->group(function () {
+    Route::get('/data', [StampDutySummaryController::class, 'getData']);
+    Route::get('/filter-options', [StampDutySummaryController::class, 'getFilterOptions']);
+    Route::get('/export', [StampDutySummaryController::class, 'export']);
+});
+
+// Local Gov Transfer Monthly Routes
+Route::prefix('local-gov-transfer-monthly')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [LocalGovTransferMonthlyController::class, 'getData']);
+    Route::get('/filter-options', [LocalGovTransferMonthlyController::class, 'getFilterOptions']);
+    Route::get('/export', [LocalGovTransferMonthlyController::class, 'export']);
+});
+
+// Local Gov Transfer Summary Routes
+Route::prefix('local-gov-transfer-summary')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [LocalGovTransferSummaryController::class, 'getData']);
+    Route::get('/filter-options', [LocalGovTransferSummaryController::class, 'getFilterOptions']);
+    Route::get('/export', [LocalGovTransferSummaryController::class, 'export']);
 });
 
  });

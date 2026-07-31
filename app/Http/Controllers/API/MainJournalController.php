@@ -610,6 +610,136 @@ class MainJournalController extends Controller
     /**
      * Export data to CSV
      */
+    // public function export(Request $request)
+    // {
+    //     try {
+    //         $year = $request->input('year');
+    //         $month = $request->input('month');
+    //         $trno = $request->input('trno');
+
+    //         if (!$year || !$month) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Year and month are required'
+    //             ], 422);
+    //         }
+
+    //         // Get data using the same logic
+    //         $query = MonthlyFincance::whereYear('created_at', $year)
+    //             ->where('month', $month);
+            
+    //         if ($trno) {
+    //             $query->where('trno', $trno);
+    //         }
+
+    //         $trnos = $query->distinct()
+    //             ->orderBy('trno')
+    //             ->pluck('trno')
+    //             ->values();
+
+    //         if ($trnos->isEmpty()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'No data to export'
+    //             ], 404);
+    //         }
+
+    //         $accountCodes = [
+    //             'deposit' => 6000,
+    //             'expenditure' => 1000,
+    //             'public_officer_advance' => 8493,
+    //             'public_service_prov_fund' => 8098,
+    //             'revenue' => 4000,
+    //             'surcharge' => 2000
+    //         ];
+
+    //         $accountLabels = [
+    //             'deposit' => 'Deposit a/c',
+    //             'expenditure' => 'Expenditure a/c',
+    //             'public_officer_advance' => 'Public Officers Advance a/c',
+    //             'public_service_prov_fund' => 'Public Service Prov. Fund',
+    //             'revenue' => 'Revenue a/c',
+    //             'surcharge' => 'Surcharge a/c'
+    //         ];
+
+    //         $exportData = [];
+    //         $grandTotalDebit = 0;
+    //         $grandTotalCredit = 0;
+
+    //         foreach ($trnos as $currentTrno) {
+    //             $row = ['TR No' => $currentTrno];
+    //             $totalDebits = 0;
+    //             $totalCredits = 0;
+
+    //             foreach ($accountCodes as $key => $code) {
+    //                 $drAmount = MonthlyFincance::whereYear('created_at', $year)
+    //                     ->where('month', $month)
+    //                     ->where('trno', $currentTrno)
+    //                     ->where('dr_cr_code', $code)
+    //                     ->where('dr_cr', 'DR')
+    //                     ->sum('cash_xe');
+
+    //                 $crAmount = MonthlyFincance::whereYear('created_at', $year)
+    //                     ->where('month', $month)
+    //                     ->where('trno', $currentTrno)
+    //                     ->where('dr_cr_code', $code)
+    //                     ->where('dr_cr', 'CR')
+    //                     ->sum('cash_xe');
+
+    //                 $row[$accountLabels[$key] . ' (DR)'] = round($drAmount, 2);
+    //                 $row[$accountLabels[$key] . ' (CR)'] = round($crAmount, 2);
+                    
+    //                 $totalDebits += $drAmount;
+    //                 $totalCredits += $crAmount;
+    //             }
+
+    //             $row['Total Debits'] = round($totalDebits, 2);
+    //             $row['Total Credits'] = round($totalCredits, 2);
+
+    //             // Balance
+    //             $diff = $totalDebits - $totalCredits;
+    //             $row['Balance Debit'] = $diff < 0 ? round(abs($diff), 2) : 0;
+    //             $row['Balance Credit'] = $diff > 0 ? round($diff, 2) : 0;
+
+    //             $exportData[] = $row;
+    //             $grandTotalDebit += $totalDebits;
+    //             $grandTotalCredit += $totalCredits;
+    //         }
+
+    //         // Add grand total row
+    //         $grandDiff = $grandTotalDebit - $grandTotalCredit;
+    //         $grandBalanceDebit = $grandDiff < 0 ? round(abs($grandDiff), 2) : 0;
+    //         $grandBalanceCredit = $grandDiff > 0 ? round($grandDiff, 2) : 0;
+
+    //         $grandTotalRow = ['TR No' => 'GRAND TOTAL'];
+    //         foreach ($accountLabels as $key => $label) {
+    //             $grandTotalRow[$label . ' (DR)'] = '';
+    //             $grandTotalRow[$label . ' (CR)'] = '';
+    //         }
+    //         $grandTotalRow['Total Debits'] = round($grandTotalDebit, 2);
+    //         $grandTotalRow['Total Credits'] = round($grandTotalCredit, 2);
+    //         $grandTotalRow['Balance Debit'] = $grandBalanceDebit;
+    //         $grandTotalRow['Balance Credit'] = $grandBalanceCredit;
+            
+    //         $exportData[] = $grandTotalRow;
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $exportData,
+    //             'total_records' => count($exportData)
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+     * Export data to CSV
+     */
     public function export(Request $request)
     {
         try {
@@ -624,104 +754,83 @@ class MainJournalController extends Controller
                 ], 422);
             }
 
-            // Get data using the same logic
-            $query = MonthlyFincance::whereYear('created_at', $year)
-                ->where('month', $month);
+            // Get main journal data
+            $data = $this->getMainJournalData($year, $month, $trno);
             
-            if ($trno) {
-                $query->where('trno', $trno);
-            }
-
-            $trnos = $query->distinct()
-                ->orderBy('trno')
-                ->pluck('trno')
-                ->values();
-
-            if ($trnos->isEmpty()) {
+            if (empty($data)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No data to export'
+                    'message' => 'No data found for the selected filters'
                 ], 404);
             }
 
-            $accountCodes = [
-                'deposit' => 6000,
-                'expenditure' => 1000,
-                'public_officer_advance' => 8493,
-                'public_service_prov_fund' => 8098,
-                'revenue' => 4000,
-                'surcharge' => 2000
-            ];
-
-            $accountLabels = [
-                'deposit' => 'Deposit a/c',
-                'expenditure' => 'Expenditure a/c',
-                'public_officer_advance' => 'Public Officers Advance a/c',
-                'public_service_prov_fund' => 'Public Service Prov. Fund',
-                'revenue' => 'Revenue a/c',
-                'surcharge' => 'Surcharge a/c'
-            ];
-
             $exportData = [];
-            $grandTotalDebit = 0;
-            $grandTotalCredit = 0;
-
-            foreach ($trnos as $currentTrno) {
-                $row = ['TR No' => $currentTrno];
-                $totalDebits = 0;
-                $totalCredits = 0;
-
-                foreach ($accountCodes as $key => $code) {
-                    $drAmount = MonthlyFincance::whereYear('created_at', $year)
-                        ->where('month', $month)
-                        ->where('trno', $currentTrno)
-                        ->where('dr_cr_code', $code)
-                        ->where('dr_cr', 'DR')
-                        ->sum('cash_xe');
-
-                    $crAmount = MonthlyFincance::whereYear('created_at', $year)
-                        ->where('month', $month)
-                        ->where('trno', $currentTrno)
-                        ->where('dr_cr_code', $code)
-                        ->where('dr_cr', 'CR')
-                        ->sum('cash_xe');
-
-                    $row[$accountLabels[$key] . ' (DR)'] = round($drAmount, 2);
-                    $row[$accountLabels[$key] . ' (CR)'] = round($crAmount, 2);
-                    
-                    $totalDebits += $drAmount;
-                    $totalCredits += $crAmount;
-                }
-
-                $row['Total Debits'] = round($totalDebits, 2);
-                $row['Total Credits'] = round($totalCredits, 2);
-
-                // Balance
-                $diff = $totalDebits - $totalCredits;
-                $row['Balance Debit'] = $diff < 0 ? round(abs($diff), 2) : 0;
-                $row['Balance Credit'] = $diff > 0 ? round($diff, 2) : 0;
-
-                $exportData[] = $row;
-                $grandTotalDebit += $totalDebits;
-                $grandTotalCredit += $totalCredits;
-            }
-
-            // Add grand total row
-            $grandDiff = $grandTotalDebit - $grandTotalCredit;
-            $grandBalanceDebit = $grandDiff < 0 ? round(abs($grandDiff), 2) : 0;
-            $grandBalanceCredit = $grandDiff > 0 ? round($grandDiff, 2) : 0;
-
-            $grandTotalRow = ['TR No' => 'GRAND TOTAL'];
-            foreach ($accountLabels as $key => $label) {
-                $grandTotalRow[$label . ' (DR)'] = '';
-                $grandTotalRow[$label . ' (CR)'] = '';
-            }
-            $grandTotalRow['Total Debits'] = round($grandTotalDebit, 2);
-            $grandTotalRow['Total Credits'] = round($grandTotalCredit, 2);
-            $grandTotalRow['Balance Debit'] = $grandBalanceDebit;
-            $grandTotalRow['Balance Credit'] = $grandBalanceCredit;
             
-            $exportData[] = $grandTotalRow;
+            // Add header row
+            $exportData[] = [
+                'Name',
+                'Total Debits (Rs)',
+                'Total Credits (Rs)'
+            ];
+
+            $totalDebits = 0;
+            $totalCredits = 0;
+
+            // Add account rows
+            foreach ($data['accounts'] as $account) {
+                $exportData[] = [
+                    $account['label'] ?? $account['key'],
+                    number_format($account['debit'] ?? 0, 2),
+                    number_format($account['credit'] ?? 0, 2)
+                ];
+                $totalDebits += $account['debit'] ?? 0;
+                $totalCredits += $account['credit'] ?? 0;
+            }
+
+            // Add Balance row
+            $diff = $totalDebits - $totalCredits;
+            $balanceDebit = $diff < 0 ? abs($diff) : 0;
+            $balanceCredit = $diff > 0 ? $diff : 0;
+
+            $exportData[] = [
+                'Balance',
+                $balanceDebit > 0 ? number_format($balanceDebit, 2) : '0.00',
+                $balanceCredit > 0 ? number_format($balanceCredit, 2) : '0.00'
+            ];
+
+            // Add empty row
+            $exportData[] = ['', '', ''];
+
+            // Add Total row with balance
+            $totalDebitsWithBalance = $totalDebits + $balanceDebit;
+            $totalCreditsWithBalance = $totalCredits + $balanceCredit;
+
+            $exportData[] = [
+                'TOTAL',
+                number_format($totalDebitsWithBalance, 2),
+                number_format($totalCreditsWithBalance, 2)
+            ];
+
+            // Add Grand Total
+            $exportData[] = ['', '', ''];
+            $exportData[] = [
+                'GRAND TOTAL',
+                number_format($totalDebitsWithBalance, 2),
+                number_format($totalCreditsWithBalance, 2)
+            ];
+
+            // Add information about filter
+            $exportData[] = ['', '', ''];
+            $monthText = $this->getMonthName($month);
+            $exportData[] = [
+                "Report: Main Journal - $monthText $year",
+                '',
+                ''
+            ];
+            if ($trno) {
+                $exportData[] = ["Filtered by Head: $trno", '', ''];
+            }
+            $exportData[] = ["Generated on: " . date('Y-m-d H:i:s'), '', ''];
 
             return response()->json([
                 'success' => true,
@@ -730,10 +839,84 @@ class MainJournalController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error in MainJournal export: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get month name
+     */
+    private function getMonthName($month)
+    {
+        $months = [
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December'
+        ];
+        return $months[$month] ?? $month;
+    }
+
+    /**
+     * Get main journal data
+     */
+    private function getMainJournalData($year, $month, $trno = null)
+    {
+        // This is where you fetch your main journal data
+        // Adjust this based on your actual data structure
+        
+        $query = MonthlyFincance::whereYear('created_at', $year)
+            ->where('month', $month);
+        
+        if ($trno) {
+            $query->where('trno', $trno);
+        }
+        
+        $records = $query->get();
+        
+        // Process data to get account summaries
+        $accounts = [];
+        $totalDebits = 0;
+        $totalCredits = 0;
+        
+        foreach ($records as $record) {
+            // Group by account type or whatever logic you have
+            $key = $record->object ?? 'Unknown';
+            
+            if (!isset($accounts[$key])) {
+                $accounts[$key] = [
+                    'key' => $key,
+                    'label' => $record->objname ?? $key,
+                    'debit' => 0,
+                    'credit' => 0
+                ];
+            }
+            
+            if ($record->dr_cr === 'DR') {
+                $accounts[$key]['debit'] += $record->amount ?? 0;
+                $totalDebits += $record->amount ?? 0;
+            } else {
+                $accounts[$key]['credit'] += $record->amount ?? 0;
+                $totalCredits += $record->amount ?? 0;
+            }
+        }
+        
+        return [
+            'accounts' => array_values($accounts),
+            'total_debits' => $totalDebits,
+            'total_credits' => $totalCredits
+        ];
     }
 }

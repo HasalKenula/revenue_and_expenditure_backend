@@ -233,6 +233,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('net-allocation')->group(function () {
         Route::get('/data', [NetAllocationController::class, 'getData']);
         Route::get('/filter-options', [NetAllocationController::class, 'getFilterOptionsEndpoint']);
+        Route::get('/export', [NetAllocationController::class, 'export']);
     });
 
     // ============================================

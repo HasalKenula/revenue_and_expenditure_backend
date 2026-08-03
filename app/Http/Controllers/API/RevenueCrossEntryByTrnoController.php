@@ -243,6 +243,101 @@ class RevenueCrossEntryByTrnoController extends Controller
     /**
      * Export data to CSV
      */
+    // public function exportCsv(Request $request)
+    // {
+    //     try {
+    //         $year = $request->input('year');
+
+    //         if (!$year) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Year is required'
+    //             ], 422);
+    //         }
+
+    //         // Get data
+    //         $data = $this->getData($request);
+    //         $responseData = $data->getData();
+
+    //         if (!$responseData->success) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Failed to fetch data for export'
+    //             ], 500);
+    //         }
+
+    //         $records = $responseData->data->records;
+    //         $totals = $responseData->data->totals;
+    //         $trnoSubtotals = $responseData->data->trno_subtotals;
+    //         $monthNames = $responseData->data->month_names;
+
+    //         // Prepare CSV headers
+    //         $headers = ['TRNO', 'Revenue Code Name', 'Revenue Code'];
+    //         for ($i = 1; $i <= 12; $i++) {
+    //             $headers[] = $monthNames[$i];
+    //         }
+    //         $headers[] = 'Total';
+
+    //         $csvRows = [];
+    //         $csvRows[] = implode(',', $headers);
+
+    //         $previousTrno = null;
+
+    //         // Add data rows
+    //         foreach ($records as $record) {
+    //             $row = [
+    //                 $record['trno'] ?? '',
+    //                 $record['revenue_code_name'] ?? '',
+    //                 ($record['head'] ?? '') . '-' . ($record['program'] ?? '') . '-' .
+    //                 ($record['project'] ?? '') . '-' . ($record['sub_project'] ?? '') . '-' .
+    //                 ($record['object'] ?? '')
+    //             ];
+
+    //             for ($i = 1; $i <= 12; $i++) {
+    //                 $row[] = number_format($record['months'][$i] ?? 0, 2);
+    //             }
+
+    //             $row[] = number_format($record['total'] ?? 0, 2);
+
+    //             $csvRows[] = implode(',', $row);
+    //         }
+
+    //         // Add TRNO subtotals
+    //         foreach ($trnoSubtotals as $trno => $subtotal) {
+    //             $row = [$trno . ' SUBTOTAL', '', ''];
+    //             for ($i = 1; $i <= 12; $i++) {
+    //                 $row[] = number_format($subtotal['months'][$i] ?? 0, 2);
+    //             }
+    //             $row[] = number_format($subtotal['total'] ?? 0, 2);
+    //             $csvRows[] = implode(',', $row);
+    //         }
+
+    //         // Add overall totals row
+    //         $totalRow = ['GRAND TOTAL', '', ''];
+    //         for ($i = 1; $i <= 12; $i++) {
+    //             $totalRow[] = number_format($totals['months'][$i] ?? 0, 2);
+    //         }
+    //         $totalRow[] = number_format($totals['total'] ?? 0, 2);
+    //         $csvRows[] = implode(',', $totalRow);
+
+    //         // Generate CSV
+    //         $csvContent = implode("\n", $csvRows);
+
+    //         return response($csvContent)
+    //             ->header('Content-Type', 'text/csv')
+    //             ->header('Content-Disposition', "attachment; filename=revenue_cross_entry_by_trno_{$year}.csv");
+
+    //     } catch (\Exception $e) {
+    //         \Log::error('Error in RevenueCrossEntryByTrno exportCsv: ' . $e->getMessage());
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+    /**
+     * Export data to CSV
+     */
     public function exportCsv(Request $request)
     {
         try {
@@ -266,65 +361,119 @@ class RevenueCrossEntryByTrnoController extends Controller
                 ], 500);
             }
 
-            $records = $responseData->data->records;
-            $totals = $responseData->data->totals;
-            $trnoSubtotals = $responseData->data->trno_subtotals;
-            $monthNames = $responseData->data->month_names;
+            // Convert stdClass objects to arrays
+            $records = json_decode(json_encode($responseData->data->records), true);
+            $totals = json_decode(json_encode($responseData->data->totals), true);
+            $trnoSubtotals = json_decode(json_encode($responseData->data->trno_subtotals), true);
+            $monthNames = json_decode(json_encode($responseData->data->month_names), true);
 
-            // Prepare CSV headers
-            $headers = ['TRNO', 'Revenue Code Name', 'Revenue Code'];
+            // Prepare CSV headers with quotes
+            $headers = ['Head', 'Revenue Code Name', 'Revenue Code'];
             for ($i = 1; $i <= 12; $i++) {
-                $headers[] = $monthNames[$i];
+                $headers[] = $monthNames[$i] ?? "Month $i";
             }
             $headers[] = 'Total';
 
             $csvRows = [];
-            $csvRows[] = implode(',', $headers);
+            
+            // Add headers with quotes
+            $csvRows[] = implode(',', array_map(function($h) { 
+                return '"' . $h . '"'; 
+            }, $headers));
+
+            // Format number without commas (to prevent CSV splitting)
+            $formatNumber = function($value) {
+                if ($value === null || $value === '') return '0.00';
+                return number_format((float)$value, 2, '.', '');
+            };
+
+            // Format combined code with apostrophe to prevent Excel date conversion
+            $formatCombinedCode = function($record) {
+                $head = (string)($record['head'] ?? '');
+                $program = (string)($record['program'] ?? '');
+                $project = (string)($record['project'] ?? '');
+                $subProject = (string)($record['sub_project'] ?? '');
+                $object = (string)($record['object'] ?? '');
+                
+                // Format each part
+                $formatPart = function($value, $length = 2) {
+                    if ($value === '' || $value === null) {
+                        return str_repeat('0', $length);
+                    }
+                    $value = trim($value);
+                    if (is_numeric($value)) {
+                        return str_pad($value, $length, '0', STR_PAD_LEFT);
+                    }
+                    return $value;
+                };
+                
+                $formattedHead = $head ?: '0';
+                $formattedProject = $formatPart($project, 2);
+                $formattedObject = $formatPart($object, 2);
+                
+                $code = "{$formattedHead}-{$formattedProject}-{$formattedObject}";
+                
+                // Add apostrophe to prevent Excel from converting to date
+                return " " . $code;
+            };
 
             $previousTrno = null;
 
             // Add data rows
             foreach ($records as $record) {
                 $row = [
-                    $record['trno'] ?? '',
-                    $record['revenue_code_name'] ?? '',
-                    ($record['head'] ?? '') . '-' . ($record['program'] ?? '') . '-' .
-                    ($record['project'] ?? '') . '-' . ($record['sub_project'] ?? '') . '-' .
-                    ($record['object'] ?? '')
+                    '"' . ($record['trno'] ?? '') . '"',
+                    '"' . ($record['revenue_code_name'] ?? '') . '"',
+                    '"' . $formatCombinedCode($record) . '"'
                 ];
 
                 for ($i = 1; $i <= 12; $i++) {
-                    $row[] = number_format($record['months'][$i] ?? 0, 2);
+                    $row[] = $formatNumber($record['months'][$i] ?? 0);
                 }
 
-                $row[] = number_format($record['total'] ?? 0, 2);
+                $row[] = $formatNumber($record['total'] ?? 0);
 
                 $csvRows[] = implode(',', $row);
             }
 
             // Add TRNO subtotals
-            foreach ($trnoSubtotals as $trno => $subtotal) {
-                $row = [$trno . ' SUBTOTAL', '', ''];
-                for ($i = 1; $i <= 12; $i++) {
-                    $row[] = number_format($subtotal['months'][$i] ?? 0, 2);
+            if (!empty($trnoSubtotals)) {
+                foreach ($trnoSubtotals as $trno => $subtotal) {
+                    $row = [
+                        '"' . $trno . ' SUBTOTAL"',
+                        '',
+                        ''
+                    ];
+                    for ($i = 1; $i <= 12; $i++) {
+                        $row[] = $formatNumber($subtotal['months'][$i] ?? 0);
+                    }
+                    $row[] = $formatNumber($subtotal['total'] ?? 0);
+                    $csvRows[] = implode(',', $row);
                 }
-                $row[] = number_format($subtotal['total'] ?? 0, 2);
-                $csvRows[] = implode(',', $row);
             }
 
             // Add overall totals row
-            $totalRow = ['GRAND TOTAL', '', ''];
+            $totalRow = ['"GRAND TOTAL"', '', ''];
             for ($i = 1; $i <= 12; $i++) {
-                $totalRow[] = number_format($totals['months'][$i] ?? 0, 2);
+                $totalRow[] = $formatNumber($totals['months'][$i] ?? 0);
             }
-            $totalRow[] = number_format($totals['total'] ?? 0, 2);
+            $totalRow[] = $formatNumber($totals['total'] ?? 0);
             $csvRows[] = implode(',', $totalRow);
+
+            // Add empty row and summary
+            $csvRows[] = '';
+            $csvRows[] = '"Report generated on: ' . date('Y-m-d H:i:s') . '"';
+            $csvRows[] = '"Year: ' . $year . '"';
+            $csvRows[] = '"Total Records: ' . count($records) . '"';
 
             // Generate CSV
             $csvContent = implode("\n", $csvRows);
 
+            // Add BOM for UTF-8 Excel compatibility
+            $csvContent = "\xEF\xBB\xBF" . $csvContent;
+
             return response($csvContent)
-                ->header('Content-Type', 'text/csv')
+                ->header('Content-Type', 'text/csv; charset=utf-8')
                 ->header('Content-Disposition', "attachment; filename=revenue_cross_entry_by_trno_{$year}.csv");
 
         } catch (\Exception $e) {

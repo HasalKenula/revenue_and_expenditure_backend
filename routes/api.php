@@ -425,6 +425,7 @@ Route::prefix('net-revenue')->group(function () {
     Route::get('/data', [NetRevenueController::class, 'getData']);
     Route::get('/filter-options', [NetRevenueController::class, 'getFilterOptions']);
     Route::get('/export', [NetRevenueController::class, 'export']);
+    Route::get('/export-csv', [NetRevenueController::class, 'exportCsv']);
 });
 
 

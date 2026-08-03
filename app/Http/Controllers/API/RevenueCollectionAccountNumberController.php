@@ -35,7 +35,7 @@ class RevenueCollectionAccountNumberController extends Controller
         // Always show all three parts, even if they are null/undefined
         $head = $this->padNumber($estimate->head, 4);
         $project = $this->padNumber($estimate->project, 2);
-        $object = $this->padNumber($estimate->object, 3);
+        $object = $this->padNumber($estimate->object, 2);
         
         return "{$head}-{$project}-{$object}";
     }

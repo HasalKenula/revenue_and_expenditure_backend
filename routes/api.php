@@ -46,6 +46,11 @@ use App\Http\Controllers\API\StampDutySummaryController;
 use App\Http\Controllers\API\LocalGovTransferMonthlyController;
 use App\Http\Controllers\API\LocalGovTransferSummaryController;
 use App\Http\Controllers\API\UserMonthlyFinanceController;
+use App\Http\Controllers\API\AccountNumberController;
+use App\Http\Controllers\API\RevenueAccountDataController;
+use App\Http\Controllers\API\RevenueCollectionAccountNumberController;
+use App\Http\Controllers\API\RevenueReceiptsInCashController;
+use App\Http\Controllers\API\RevenueReceiptsInCashSummaryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -521,6 +526,58 @@ Route::prefix('local-gov-transfer-summary')->middleware('auth:sanctum')->group(f
     Route::get('/filter-options', [LocalGovTransferSummaryController::class, 'getFilterOptions']);
     Route::get('/export', [LocalGovTransferSummaryController::class, 'export']);
 });
+
+// Account Numbers Routes
+Route::prefix('account-numbers')->group(function () {
+    Route::get('/', [AccountNumberController::class, 'index']);
+    Route::get('/all', [AccountNumberController::class, 'getAll']);
+    Route::get('/{id}', [AccountNumberController::class, 'show']);
+    Route::post('/', [AccountNumberController::class, 'store']);
+    Route::put('/{id}', [AccountNumberController::class, 'update']);
+    Route::delete('/{id}', [AccountNumberController::class, 'destroy']);
+    Route::post('/delete-multiple', [AccountNumberController::class, 'destroyMultiple']);
+});
+
+
+Route::prefix('revenue-account-data')->group(function () {
+    Route::get('/', [RevenueAccountDataController::class, 'index']);
+    Route::get('/summary', [RevenueAccountDataController::class, 'getSummary']);
+    Route::get('/month-wise-summary', [RevenueAccountDataController::class, 'getMonthWiseSummary']);
+    Route::get('/by-account/{accountNumberId}', [RevenueAccountDataController::class, 'getByAccountNumber']);
+    Route::get('/revenue-code-options', [RevenueAccountDataController::class, 'getRevenueCodeOptions']); // Make sure this exists
+    Route::get('/search-revenue-codes', [RevenueAccountDataController::class, 'searchRevenueCodes']);
+    Route::get('/{id}', [RevenueAccountDataController::class, 'show']);
+    Route::post('/', [RevenueAccountDataController::class, 'store']);
+    Route::put('/{id}', [RevenueAccountDataController::class, 'update']);
+    Route::delete('/{id}', [RevenueAccountDataController::class, 'destroy']);
+    Route::post('/delete-multiple', [RevenueAccountDataController::class, 'destroyMultiple']);
+});
+
+
+// Revenue Collection by Account Number Routes
+Route::prefix('revenue-collection-account-number')->group(function () {
+    Route::get('/data', [RevenueCollectionAccountNumberController::class, 'getData']);
+    Route::get('/filter-options', [RevenueCollectionAccountNumberController::class, 'getFilterOptionsEndpoint']);
+    Route::get('/export', [RevenueCollectionAccountNumberController::class, 'export']);
+});
+
+
+
+// Revenue Receipts In Cash Routes
+Route::prefix('revenue-receipts-in-cash')->group(function () {
+    Route::get('/data', [RevenueReceiptsInCashController::class, 'getData']);
+    Route::get('/filter-options', [RevenueReceiptsInCashController::class, 'getFilterOptions']);
+    Route::get('/export', [RevenueReceiptsInCashController::class, 'export']);
+});
+
+
+// Revenue Receipts In Cash Routes
+Route::prefix('revenue-receipts-in-cash-summary')->group(function () {
+   Route::get('/data', [RevenueReceiptsInCashSummaryController::class, 'getData']);
+   Route::get('/filter-options', [RevenueReceiptsInCashSummaryController::class, 'getFilterOptions']);
+   Route::get('/export', [RevenueReceiptsInCashSummaryController::class, 'export']);
+});
+
 
  });
 }); // End of auth:sanctum middleware group

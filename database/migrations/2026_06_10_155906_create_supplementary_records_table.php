@@ -32,6 +32,21 @@ return new class extends Migration
             $table->index('month');
             $table->index('head');
             $table->index('program');
+
+            // Composite unique constraint
+            $table->unique(
+                [
+                    'year',
+                    'month',
+                    'head',
+                    'program',
+                    'project',
+                    'subproject',
+                    'object',
+                    'subobject'
+                ],
+                'unique_supplementary_record'
+            );
         });
     }
 

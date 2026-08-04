@@ -37,6 +37,23 @@ return new class extends Migration
             $table->decimal('cash', 18, 2)->default(0);
             $table->decimal('xe', 18, 2)->default(0);
             $table->timestamps();
+
+            // Composite unique constraint
+            $table->unique(
+                [
+                    'trno',
+                    'month',
+                    'dr_cr_code',
+                    'head',
+                    'program',
+                    'project',
+                    'sub_project',
+                    'object',
+                    'dr_cr',
+                    'year'
+                ],
+                'unique_monthly_finance'
+            );
         });
     }
 

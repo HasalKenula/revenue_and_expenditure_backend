@@ -23,6 +23,9 @@ return new class extends Migration
             $table->index('head');
             $table->index('year');
             $table->index('month');
+
+            // Composite unique constraint
+            $table->unique(['head', 'year', 'month'], 'unique_head_year_month');
         });
     }
 

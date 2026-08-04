@@ -224,27 +224,98 @@ class EstimateController extends Controller
     /**
      * Delete multiple estimates.
      */
+    // public function destroyMultiple(Request $request)
+    // {
+    //     try {
+    //         $validator = Validator::make($request->all(), [
+    //             'ids' => 'required|array',
+    //             'ids.*' => 'exists:estimates,id'
+    //         ]);
+            
+    //         if ($validator->fails()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'errors' => $validator->errors()
+    //             ], 422);
+    //         }
+            
+    //         $deletedCount = Estimate::whereIn('id', $request->ids)->delete();
+            
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => $deletedCount . ' record(s) deleted successfully'
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error deleting records: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+    /**
+     * Delete multiple estimates.
+     */
     public function destroyMultiple(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'ids' => 'required|array',
-                'ids.*' => 'exists:estimates,id'
-            ]);
+            // Get IDs from query parameter
+            $ids = $request->query('ids');
             
-            if ($validator->fails()) {
+            // If IDs are sent as a comma-separated string
+            if (is_string($ids)) {
+                $ids = explode(',', $ids);
+            }
+            
+            // If IDs are in the request body (as fallback)
+            if (empty($ids)) {
+                $ids = $request->input('ids');
+                if (is_string($ids)) {
+                    $ids = explode(',', $ids);
+                }
+            }
+            
+            // Validate
+            if (empty($ids) || !is_array($ids)) {
                 return response()->json([
                     'success' => false,
-                    'errors' => $validator->errors()
+                    'message' => 'Please provide at least one ID to delete'
                 ], 422);
             }
             
-            $deletedCount = Estimate::whereIn('id', $request->ids)->delete();
+            // Ensure all IDs are integers and remove empty values
+            $ids = array_filter(array_map('intval', $ids), function($id) {
+                return $id > 0;
+            });
+            
+            if (empty($ids)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid IDs provided'
+                ], 422);
+            }
+            
+            // Check if records exist
+            $existingRecords = Estimate::whereIn('id', $ids)->pluck('id');
+            $nonExistentIds = array_diff($ids, $existingRecords->toArray());
+            
+            if (!empty($nonExistentIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Some records were not found: ' . implode(', ', $nonExistentIds),
+                    'not_found_ids' => $nonExistentIds
+                ], 404);
+            }
+            
+            // Perform deletion
+            $deletedCount = Estimate::whereIn('id', $ids)->delete();
             
             return response()->json([
                 'success' => true,
-                'message' => $deletedCount . ' record(s) deleted successfully'
+                'message' => $deletedCount . ' record(s) deleted successfully',
+                'deleted_count' => $deletedCount,
+                'deleted_ids' => $ids
             ]);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

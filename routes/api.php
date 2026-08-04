@@ -362,35 +362,6 @@ Route::prefix('upkeep')->group(function () {
     Route::get('/export', [UpkeepController::class, 'export']);
 });
 
-
-// Head Info routes
-Route::prefix('head-info')->group(function () {
-    Route::get('/', [HeadInfoController::class, 'index']);              // Get all heads
-    Route::get('/list', [HeadInfoController::class, 'getHeadsList']);   // Get heads for dropdown
-    Route::get('/search', [HeadInfoController::class, 'search']);       // Search heads
-    Route::get('/{head}', [HeadInfoController::class, 'show']);         // Get single head
-    Route::post('/', [HeadInfoController::class, 'store']);             // Create head
-    Route::put('/{head}', [HeadInfoController::class, 'update']);       // Update head
-    Route::delete('/{head}', [HeadInfoController::class, 'destroy']);   // Delete head
-    Route::delete('/delete-multiple', [HeadInfoController::class, 'destroyMultiple']); // Delete multiple
-});
-
-
-    // Item Code routes
-Route::prefix('item-code')->group(function () {
-    Route::get('/', [ItemCodeController::class, 'index']);              // Get all items
-    Route::get('/list', [ItemCodeController::class, 'getItemsList']);   // Get items for dropdown
-    Route::get('/filter-options', [ItemCodeController::class, 'getFilterOptions']); // Filter options
-    Route::get('/years-summary', [ItemCodeController::class, 'getYearsSummary']); // Years summary
-    Route::get('/search', [ItemCodeController::class, 'search']);       // Search items
-    Route::get('/{item}', [ItemCodeController::class, 'show']);         // Get single item
-    Route::post('/', [ItemCodeController::class, 'store']);             // Create item
-    Route::put('/{item}', [ItemCodeController::class, 'update']);       // Update item
-    Route::delete('/{item}', [ItemCodeController::class, 'destroy']);   // Delete item
-    Route::delete('/delete-multiple', [ItemCodeController::class, 'destroyMultiple']); // Delete multiple
-});
-
-
 Route::prefix('estimates')->group(function () {
     Route::get('/', [EstimateController::class, 'index']);
     Route::get('/filter-options', [EstimateController::class, 'getFilterOptions']);
@@ -399,9 +370,9 @@ Route::prefix('estimates')->group(function () {
     Route::get('/{id}', [EstimateController::class, 'show']);
     Route::post('/', [EstimateController::class, 'store']);
     Route::post('/import', [EstimateController::class, 'import']);
-    Route::put('/{id}', [EstimateController::class, 'update']);
-    Route::delete('/{id}', [EstimateController::class, 'destroy']);
+    Route::put('/{id}', [EstimateController::class, 'update']); 
     Route::delete('/delete-multiple', [EstimateController::class, 'destroyMultiple']);
+    Route::delete('/{id}', [EstimateController::class, 'destroy']);
 });
 
 
@@ -415,8 +386,9 @@ Route::prefix('treasury')->group(function () {
     Route::post('/', [TreasuryController::class, 'store']);
     Route::post('/import', [TreasuryController::class, 'import']);
     Route::put('/{id}', [TreasuryController::class, 'update']);
-    Route::delete('/{id}', [TreasuryController::class, 'destroy']);
     Route::delete('/delete-multiple', [TreasuryController::class, 'destroyMultiple']);
+    Route::delete('/{id}', [TreasuryController::class, 'destroy']);
+    
 });
 
 

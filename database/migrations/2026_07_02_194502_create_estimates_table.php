@@ -29,6 +29,18 @@ return new class extends Migration
             $table->index('project');
             $table->index('object');
             $table->index('revenue_code_name');
+
+            // Composite unique constraint
+            $table->unique(
+                [
+                    'head',
+                    'program',
+                    'project',
+                    'sub_project',
+                    'object'
+                ],
+                'unique_estimate_record'
+            );
         });
     }
 

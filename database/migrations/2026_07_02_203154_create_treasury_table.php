@@ -43,6 +43,23 @@ return new class extends Migration
             $table->index('project');
             $table->index('sub_project');
             $table->index('object');
+
+            // Composite unique constraint
+            $table->unique(
+                [
+                    'trno',
+                    'month',
+                    'dr_cr_code',
+                    'head',
+                    'program',
+                    'project',
+                    'sub_project',
+                    'object',
+                    'dr_cr',
+                    'year'
+                ],
+                'unique_treasury_record'
+            );
         });
     }
 

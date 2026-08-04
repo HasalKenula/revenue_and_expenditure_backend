@@ -20,10 +20,13 @@ return new class extends Migration
             $table->timestamps();
 
 
-             // Add indexes for better performance
+            // Add indexes for better performance
             $table->index('head');
             $table->index('year');
             $table->index('month');
+
+            // Composite unique constraint
+            $table->unique(['head', 'year', 'month'], 'unique_impress_settlement');
         });
     }
 

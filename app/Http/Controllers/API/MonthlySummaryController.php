@@ -200,6 +200,90 @@ class MonthlySummaryController extends Controller
     /**
      * Export data to CSV
      */
+    // public function exportCsv(Request $request)
+    // {
+    //     try {
+    //         $year = $request->input('year');
+    //         $month = $request->input('month');
+
+    //         if (!$year) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Year is required'
+    //             ], 422);
+    //         }
+
+    //         // Get data
+    //         $data = $this->getData($request);
+    //         $responseData = $data->getData();
+
+    //         if (!$responseData->success) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Failed to fetch data for export'
+    //             ], 500);
+    //         }
+
+    //         $records = $responseData->data->records;
+    //         $totals = $responseData->data->totals;
+
+    //         // Prepare CSV headers
+    //         $headers = [
+    //             'Month',
+    //             'X Entry (Rs)',
+    //             'Collection (Rs)',
+    //             'Total (Rs)',
+    //             'Refund (Rs)',
+    //             'Net Revenue (Rs)'
+    //         ];
+
+    //         $csvRows = [];
+    //         $csvRows[] = implode(',', $headers);
+
+    //         // Add data rows
+    //         foreach ($records as $record) {
+    //             $row = [
+    //                 $record['month_name'],
+    //                 number_format($record['x_entry'] ?? 0, 2),
+    //                 number_format($record['collection'] ?? 0, 2),
+    //                 number_format($record['total'] ?? 0, 2),
+    //                 number_format($record['refund'] ?? 0, 2),
+    //                 number_format($record['net_revenue'] ?? 0, 2)
+    //             ];
+
+    //             $csvRows[] = implode(',', $row);
+    //         }
+
+    //         // Add totals row
+    //         $totalRow = [
+    //             'TOTAL',
+    //             number_format($totals['x_entry'] ?? 0, 2),
+    //             number_format($totals['collection'] ?? 0, 2),
+    //             number_format($totals['total'] ?? 0, 2),
+    //             number_format($totals['refund'] ?? 0, 2),
+    //             number_format($totals['net_revenue'] ?? 0, 2)
+    //         ];
+    //         $csvRows[] = implode(',', $totalRow);
+
+    //         // Generate CSV
+    //         $csvContent = implode("\n", $csvRows);
+
+    //         return response($csvContent)
+    //             ->header('Content-Type', 'text/csv')
+    //             ->header('Content-Disposition', "attachment; filename=monthly_summary_{$year}.csv");
+
+    //     } catch (\Exception $e) {
+    //         \Log::error('Error in MonthlySummary exportCsv: ' . $e->getMessage());
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+     * Export data to CSV
+     */
     public function exportCsv(Request $request)
     {
         try {
@@ -224,10 +308,11 @@ class MonthlySummaryController extends Controller
                 ], 500);
             }
 
-            $records = $responseData->data->records;
-            $totals = $responseData->data->totals;
+            // Convert stdClass objects to arrays
+            $records = json_decode(json_encode($responseData->data->records), true);
+            $totals = json_decode(json_encode($responseData->data->totals), true);
 
-            // Prepare CSV headers
+            // Prepare CSV headers with quotes
             $headers = [
                 'Month',
                 'X Entry (Rs)',
@@ -238,17 +323,27 @@ class MonthlySummaryController extends Controller
             ];
 
             $csvRows = [];
-            $csvRows[] = implode(',', $headers);
+            
+            // Add headers with quotes
+            $csvRows[] = implode(',', array_map(function($h) { 
+                return '"' . $h . '"'; 
+            }, $headers));
 
-            // Add data rows
+            // Format number without commas (to prevent CSV splitting)
+            $formatNumber = function($value) {
+                if ($value === null || $value === '') return '0.00';
+                return number_format((float)$value, 2, '.', '');
+            };
+
+            // Add data rows - Now accessing as arrays
             foreach ($records as $record) {
                 $row = [
-                    $record['month_name'],
-                    number_format($record['x_entry'] ?? 0, 2),
-                    number_format($record['collection'] ?? 0, 2),
-                    number_format($record['total'] ?? 0, 2),
-                    number_format($record['refund'] ?? 0, 2),
-                    number_format($record['net_revenue'] ?? 0, 2)
+                    '"' . ($record['month_name'] ?? '') . '"',
+                    $formatNumber($record['x_entry'] ?? 0),
+                    $formatNumber($record['collection'] ?? 0),
+                    $formatNumber($record['total'] ?? 0),
+                    $formatNumber($record['refund'] ?? 0),
+                    $formatNumber($record['net_revenue'] ?? 0)
                 ];
 
                 $csvRows[] = implode(',', $row);
@@ -256,20 +351,37 @@ class MonthlySummaryController extends Controller
 
             // Add totals row
             $totalRow = [
-                'TOTAL',
-                number_format($totals['x_entry'] ?? 0, 2),
-                number_format($totals['collection'] ?? 0, 2),
-                number_format($totals['total'] ?? 0, 2),
-                number_format($totals['refund'] ?? 0, 2),
-                number_format($totals['net_revenue'] ?? 0, 2)
+                '"TOTAL"',
+                $formatNumber($totals['x_entry'] ?? 0),
+                $formatNumber($totals['collection'] ?? 0),
+                $formatNumber($totals['total'] ?? 0),
+                $formatNumber($totals['refund'] ?? 0),
+                $formatNumber($totals['net_revenue'] ?? 0)
             ];
             $csvRows[] = implode(',', $totalRow);
+
+            // Add empty row and summary
+            $csvRows[] = '';
+            $csvRows[] = '"Report generated on: ' . date('Y-m-d H:i:s') . '"';
+            $csvRows[] = '"Year: ' . $year . '"';
+            if ($month) {
+                $monthNames = [
+                    1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+                    5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+                    9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+                ];
+                $csvRows[] = '"Month: ' . ($monthNames[$month] ?? $month) . '"';
+            }
+            $csvRows[] = '"Total Records: ' . count($records) . '"';
 
             // Generate CSV
             $csvContent = implode("\n", $csvRows);
 
+            // Add BOM for UTF-8 Excel compatibility
+            $csvContent = "\xEF\xBB\xBF" . $csvContent;
+
             return response($csvContent)
-                ->header('Content-Type', 'text/csv')
+                ->header('Content-Type', 'text/csv; charset=utf-8')
                 ->header('Content-Disposition', "attachment; filename=monthly_summary_{$year}.csv");
 
         } catch (\Exception $e) {

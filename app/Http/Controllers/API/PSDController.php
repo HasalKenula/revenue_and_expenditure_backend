@@ -366,132 +366,363 @@ class PSDController extends Controller
     /**
      * Export data to CSV
      */
-    public function export(Request $request)
-    {
-        try {
-            $year = $request->input('year');
-            $month = $request->input('month');
-            $viewType = $request->input('view_type', 'cumulative');
+    // public function export(Request $request)
+    // {
+    //     try {
+    //         $year = $request->input('year');
+    //         $month = $request->input('month');
+    //         $viewType = $request->input('view_type', 'cumulative');
 
-            if (!$year || !$month) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Year and month are required'
-                ], 422);
-            }
+    //         if (!$year || !$month) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Year and month are required'
+    //             ], 422);
+    //         }
 
-            if ($viewType === 'cumulative') {
-                $monthsToInclude = range(1, (int)$month);
-            } else {
-                $monthsToInclude = [(int)$month];
-            }
+    //         if ($viewType === 'cumulative') {
+    //             $monthsToInclude = range(1, (int)$month);
+    //         } else {
+    //             $monthsToInclude = [(int)$month];
+    //         }
 
-            $mainMinistryRows = [
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 12, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 11, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 9, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 7, 'object' => 2502],
-                ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 14, 'object' => 2502]
-            ];
+    //         $mainMinistryRows = [
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 12, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 11, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 9, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 7, 'object' => 2502],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 14, 'object' => 2502]
+    //         ];
 
-            $educationMinistryRows = [
-                ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
-                ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2502],
-                ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
-                ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
-                ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502],
-                ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 7, 'object' => 2502]
-            ];
+    //         $educationMinistryRows = [
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2502],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 7, 'object' => 2502]
+    //         ];
 
-            $animalMinistryRows = [
-                ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
-                ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
-                ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
-                ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
-                ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502]
-            ];
+    //         $animalMinistryRows = [
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502]
+    //         ];
 
-            $agricultureMinistryRows = [
-                ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
-                ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
-                ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
-                ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502]
-            ];
+    //         $agricultureMinistryRows = [
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502]
+    //         ];
 
-            $landMinistryRows = [
-                ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
-                ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2502],
-                ['trno' => 308, 'program' => 50, 'project' => 3, 'sub_project' => 1, 'object' => 2502]
-            ];
+    //         $landMinistryRows = [
+    //             ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+    //             ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2502],
+    //             ['trno' => 308, 'program' => 50, 'project' => 3, 'sub_project' => 1, 'object' => 2502]
+    //         ];
 
-            $mainSecretaryRows = [
-                ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 3, 'object' => 2502],
-                ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 5, 'object' => 2502]
-            ];
+    //         $mainSecretaryRows = [
+    //             ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 3, 'object' => 2502],
+    //             ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 5, 'object' => 2502]
+    //         ];
 
-            // Add subject names for export
-            $mainMinistryRows = $this->addSubjectNames($mainMinistryRows);
-            $educationMinistryRows = $this->addSubjectNames($educationMinistryRows);
-            $animalMinistryRows = $this->addSubjectNames($animalMinistryRows);
-            $agricultureMinistryRows = $this->addSubjectNames($agricultureMinistryRows);
-            $landMinistryRows = $this->addSubjectNames($landMinistryRows);
-            $mainSecretaryRows = $this->addSubjectNames($mainSecretaryRows);
+    //         // Add subject names for export
+    //         $mainMinistryRows = $this->addSubjectNames($mainMinistryRows);
+    //         $educationMinistryRows = $this->addSubjectNames($educationMinistryRows);
+    //         $animalMinistryRows = $this->addSubjectNames($animalMinistryRows);
+    //         $agricultureMinistryRows = $this->addSubjectNames($agricultureMinistryRows);
+    //         $landMinistryRows = $this->addSubjectNames($landMinistryRows);
+    //         $mainSecretaryRows = $this->addSubjectNames($mainSecretaryRows);
 
-            $exportData = [];
+    //         $exportData = [];
 
-            // Add Main Ministry data
-            $mainData = $this->processRowsForExport($mainMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: MAIN MINISTRY'];
-            $exportData = array_merge($exportData, $mainData);
-            $exportData[] = [];
+    //         // Add Main Ministry data
+    //         $mainData = $this->processRowsForExport($mainMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: MAIN MINISTRY'];
+    //         $exportData = array_merge($exportData, $mainData);
+    //         $exportData[] = [];
 
-            // Add Education Ministry data
-            $educationData = $this->processRowsForExport($educationMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: EDUCATION MINISTRY'];
-            $exportData = array_merge($exportData, $educationData);
-            $exportData[] = [];
+    //         // Add Education Ministry data
+    //         $educationData = $this->processRowsForExport($educationMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: EDUCATION MINISTRY'];
+    //         $exportData = array_merge($exportData, $educationData);
+    //         $exportData[] = [];
 
-            // Add Animal Ministry data
-            $animalData = $this->processRowsForExport($animalMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: ANIMAL MINISTRY'];
-            $exportData = array_merge($exportData, $animalData);
-            $exportData[] = [];
+    //         // Add Animal Ministry data
+    //         $animalData = $this->processRowsForExport($animalMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: ANIMAL MINISTRY'];
+    //         $exportData = array_merge($exportData, $animalData);
+    //         $exportData[] = [];
 
-            // Add Agriculture Ministry data
-            $agricultureData = $this->processRowsForExport($agricultureMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: AGRICULTURE MINISTRY'];
-            $exportData = array_merge($exportData, $agricultureData);
-            $exportData[] = [];
+    //         // Add Agriculture Ministry data
+    //         $agricultureData = $this->processRowsForExport($agricultureMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: AGRICULTURE MINISTRY'];
+    //         $exportData = array_merge($exportData, $agricultureData);
+    //         $exportData[] = [];
 
-            // Add Land Ministry data
-            $landData = $this->processRowsForExport($landMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: LAND MINISTRY'];
-            $exportData = array_merge($exportData, $landData);
-            $exportData[] = [];
+    //         // Add Land Ministry data
+    //         $landData = $this->processRowsForExport($landMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: LAND MINISTRY'];
+    //         $exportData = array_merge($exportData, $landData);
+    //         $exportData[] = [];
 
-            // Add Main Secretary data
-            $mainSecretaryData = $this->processRowsForExport($mainSecretaryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: MAIN SECRETARY MINISTRY'];
-            $exportData = array_merge($exportData, $mainSecretaryData);
+    //         // Add Main Secretary data
+    //         $mainSecretaryData = $this->processRowsForExport($mainSecretaryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: MAIN SECRETARY MINISTRY'];
+    //         $exportData = array_merge($exportData, $mainSecretaryData);
 
-            return response()->json([
-                'success' => true,
-                'data' => $exportData,
-                'total_records' => count($exportData)
-            ]);
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $exportData,
+    //             'total_records' => count($exportData)
+    //         ]);
 
-        } catch (\Exception $e) {
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+ * Export data to CSV
+ */
+public function export(Request $request)
+{
+    try {
+        $year = $request->input('year');
+        $month = $request->input('month');
+        $viewType = $request->input('view_type', 'cumulative');
+
+        if (!$year || !$month) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+                'message' => 'Year and month are required'
+            ], 422);
         }
+
+        if ($viewType === 'cumulative') {
+            $monthsToInclude = range(1, (int)$month);
+        } else {
+            $monthsToInclude = [(int)$month];
+        }
+
+        // Define all ministry rows (same as in getData)
+        $mainMinistryRows = [
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 12, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 11, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 9, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 7, 'object' => 2502],
+            ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 14, 'object' => 2502]
+        ];
+
+        $educationMinistryRows = [
+            ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+            ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2502],
+            ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+            ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
+            ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502],
+            ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 7, 'object' => 2502]
+        ];
+
+        $animalMinistryRows = [
+            ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+            ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
+            ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+            ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502],
+            ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2502]
+        ];
+
+        $agricultureMinistryRows = [
+            ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+            ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2502],
+            ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2502],
+            ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2502]
+        ];
+
+        $landMinistryRows = [
+            ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2502],
+            ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2502],
+            ['trno' => 308, 'program' => 50, 'project' => 3, 'sub_project' => 1, 'object' => 2502]
+        ];
+
+        $mainSecretaryRows = [
+            ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 3, 'object' => 2502],
+            ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 5, 'object' => 2502]
+        ];
+
+        // Add subject names
+        $mainMinistryRows = $this->addSubjectNames($mainMinistryRows);
+        $educationMinistryRows = $this->addSubjectNames($educationMinistryRows);
+        $animalMinistryRows = $this->addSubjectNames($animalMinistryRows);
+        $agricultureMinistryRows = $this->addSubjectNames($agricultureMinistryRows);
+        $landMinistryRows = $this->addSubjectNames($landMinistryRows);
+        $mainSecretaryRows = $this->addSubjectNames($mainSecretaryRows);
+
+        // Process all data
+        $mainData = $this->processRowsForExport($mainMinistryRows, $year, $monthsToInclude);
+        $educationData = $this->processRowsForExport($educationMinistryRows, $year, $monthsToInclude);
+        $animalData = $this->processRowsForExport($animalMinistryRows, $year, $monthsToInclude);
+        $agricultureData = $this->processRowsForExport($agricultureMinistryRows, $year, $monthsToInclude);
+        $landData = $this->processRowsForExport($landMinistryRows, $year, $monthsToInclude);
+        $mainSecretaryData = $this->processRowsForExport($mainSecretaryRows, $year, $monthsToInclude);
+
+        // Build export data as array of objects (not arrays)
+        $exportData = [];
+
+        // Helper to add ministry data as objects
+        $addMinistryData = function($data, $ministryName) use (&$exportData) {
+            if (empty($data)) return;
+            
+            // Add ministry header as a special row
+            $exportData[] = (object) [
+                'Ministry' => $ministryName,
+                'TR No' => '',
+                'Program' => '',
+                'Project' => '',
+                'Sub Project' => '',
+                'Object' => '',
+                'Subject Name' => '',
+                'Debit' => '',
+                'Other Debit' => '',
+                'Total Expenditure' => ''
+            ];
+            
+            // Add data rows
+            foreach ($data as $row) {
+                $exportData[] = (object) [
+                    'Ministry' => '',
+                    'TR No' => $row['TR No'] ?? '',
+                    'Program' => $row['Program'] ?? '',
+                    'Project' => $row['Project'] ?? '',
+                    'Sub Project' => $row['Sub Project'] ?? '',
+                    'Object' => $row['Object'] ?? '',
+                    'Subject Name' => $row['Subject Name'] ?? '',
+                    'Debit' => round($row['Debit'] ?? 0, 2),
+                    'Other Debit' => round($row['Other Debit'] ?? 0, 2),
+                    'Total Expenditure' => round($row['Total Expenditure'] ?? 0, 2)
+                ];
+            }
+            
+            // Add empty row for spacing
+            $exportData[] = (object) [
+                'Ministry' => '',
+                'TR No' => '',
+                'Program' => '',
+                'Project' => '',
+                'Sub Project' => '',
+                'Object' => '',
+                'Subject Name' => '',
+                'Debit' => '',
+                'Other Debit' => '',
+                'Total Expenditure' => ''
+            ];
+        };
+
+        // Add all ministries
+        $addMinistryData($mainData, 'CHIEF MINISTRY (Head: 304)');
+        $addMinistryData($educationData, 'MINISTRY OF SPORTS (Head: 318)');
+        $addMinistryData($animalData, 'MINISTRY OF FISHERIES (Head: 311)');
+        $addMinistryData($agricultureData, 'MINISTRY OF AGRICULTURE (Head: 314)');
+        $addMinistryData($landData, 'MINISTRY OF EDUCATION (Head: 308)');
+        $addMinistryData($mainSecretaryData, 'CHIEF SECRETARIAT (Head: 320)');
+
+        // Add Summary section
+        $exportData[] = (object) [
+            'Ministry' => '=== SUMMARY ===',
+            'TR No' => '',
+            'Program' => '',
+            'Project' => '',
+            'Sub Project' => '',
+            'Object' => '',
+            'Subject Name' => '',
+            'Debit' => '',
+            'Other Debit' => '',
+            'Total Expenditure' => ''
+        ];
+
+        // Calculate totals from all ministries
+        $ministries = [
+            ['name' => 'CHIEF MINISTRY', 'data' => $mainData],
+            ['name' => 'MINISTRY OF SPORTS', 'data' => $educationData],
+            ['name' => 'MINISTRY OF FISHERIES', 'data' => $animalData],
+            ['name' => 'MINISTRY OF AGRICULTURE', 'data' => $agricultureData],
+            ['name' => 'MINISTRY OF EDUCATION', 'data' => $landData],
+            ['name' => 'CHIEF SECRETARIAT', 'data' => $mainSecretaryData]
+        ];
+
+        $grandTotalDebit = 0;
+        $grandTotalOtherDebit = 0;
+        $grandTotalExpenditure = 0;
+
+        foreach ($ministries as $ministry) {
+            $totalRow = end($ministry['data']);
+            if ($totalRow && isset($totalRow['Debit'])) {
+                $debit = $totalRow['Debit'] ?? 0;
+                $otherDebit = $totalRow['Other Debit'] ?? 0;
+                $expenditure = $totalRow['Total Expenditure'] ?? 0;
+
+                $exportData[] = (object) [
+                    'Ministry' => $ministry['name'],
+                    'TR No' => '',
+                    'Program' => '',
+                    'Project' => '',
+                    'Sub Project' => '',
+                    'Object' => '',
+                    'Subject Name' => 'TOTAL',
+                    'Debit' => round($debit, 2),
+                    'Other Debit' => round($otherDebit, 2),
+                    'Total Expenditure' => round($expenditure, 2)
+                ];
+
+                $grandTotalDebit += $debit;
+                $grandTotalOtherDebit += $otherDebit;
+                $grandTotalExpenditure += $expenditure;
+            }
+        }
+
+        // Add Grand Total
+        $exportData[] = (object) [
+            'Ministry' => 'GRAND TOTAL',
+            'TR No' => '',
+            'Program' => '',
+            'Project' => '',
+            'Sub Project' => '',
+            'Object' => '',
+            'Subject Name' => '',
+            'Debit' => round($grandTotalDebit, 2),
+            'Other Debit' => round($grandTotalOtherDebit, 2),
+            'Total Expenditure' => round($grandTotalExpenditure, 2)
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $exportData,
+            'total_records' => count($exportData)
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error in PSD export: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 
     private function processRowsForExport($rows, $year, $monthsToInclude)
     {

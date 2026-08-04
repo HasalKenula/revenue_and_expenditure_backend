@@ -308,8 +308,7 @@ class QuarterRevenueController extends Controller
             ], 500);
         }
     }
-
-    /**
+        /**
      * Export data to CSV
      */
     public function exportCsv(Request $request)
@@ -336,61 +335,103 @@ class QuarterRevenueController extends Controller
                 ], 500);
             }
 
-            $records = $responseData->data->records;
-            $totals = $responseData->data->totals;
-            $months = $responseData->data->months;
-            $monthNames = $responseData->data->month_names;
-            $quarterLabel = $responseData->data->quarter_label;
+            // Convert stdClass objects to arrays
+            $records = json_decode(json_encode($responseData->data->records), true);
+            $totals = json_decode(json_encode($responseData->data->totals), true);
+            $months = json_decode(json_encode($responseData->data->months), true);
+            $monthNames = json_decode(json_encode($responseData->data->month_names), true);
+            $quarterLabel = $responseData->data->quarter_label ?? '';
 
             // Prepare CSV headers
-            $headers = ['Head-Program-Project-SubProject-Object', 'Revenue Code', 'Estimate', 'Re-Estimate'];
+            $headers = ['Revenue Code', 'Revenue Category', 'Estimate', 'Re-Estimate'];
             foreach ($months as $m) {
-                $headers[] = $monthNames[$m] ?? $m;
+                $headers[] = $monthNames[$m] ?? "Month $m";
             }
             $headers[] = 'Total Quarter Revenue';
             $headers[] = 'Quarter Refund';
             $headers[] = 'Net Quarter Revenue';
 
             $csvRows = [];
-            $csvRows[] = implode(',', $headers);
+            
+            // Add headers with quotes
+            $csvRows[] = implode(',', array_map(function($h) { 
+                return '"' . $h . '"'; 
+            }, $headers));
+
+            // Format number without commas
+            $formatNumber = function($value) {
+                if ($value === null || $value === '') return '0.00';
+                return number_format((float)$value, 2, '.', '');
+            };
+
+            // Format combined code with proper formatting and prevent Excel date conversion
+            $formatCombinedCode = function($record) {
+                $head = (string)($record['head'] ?? '');
+                $program = (string)($record['program'] ?? '');
+                $project = (string)($record['project'] ?? '');
+                $subProject = (string)($record['sub_project'] ?? '');
+                $object = (string)($record['object'] ?? '');
+                
+                // Format each part
+                $formatPart = function($value, $length = 2) {
+                    if ($value === '' || $value === null) {
+                        return str_repeat('0', $length);
+                    }
+                    $value = trim($value);
+                    if (is_numeric($value)) {
+                        return str_pad($value, $length, '0', STR_PAD_LEFT);
+                    }
+                    return $value;
+                };
+                
+                $formattedHead = $head ?: '0';
+                $formattedProject = $formatPart($project, 2);
+                $formattedObject = $formatPart($object, 2);
+                
+                $code = "{$formattedHead}-{$formattedProject}-{$formattedObject}";
+                
+                // Add apostrophe to prevent Excel from converting to date
+                return " " . $code;
+            };
 
             // Add data rows
             foreach ($records as $record) {
                 $row = [
-                    ($record['head'] ?? '') . '-' . ($record['program'] ?? '') . '-' . 
-                    ($record['project'] ?? '') . '-' . ($record['sub_project'] ?? '') . '-' . 
-                    ($record['object'] ?? ''),
-                    $record['revenue_code_name'] ?? '',
-                    number_format($record['estimate'] ?? 0, 2),
-                    number_format($record['re_estimate'] ?? 0, 2)
+                    '"' . $formatCombinedCode($record) . '"',
+                    '"' . ($record['revenue_code_name'] ?? '') . '"',
+                    $formatNumber($record['estimate'] ?? 0),
+                    $formatNumber($record['re_estimate'] ?? 0)
                 ];
 
                 foreach ($months as $m) {
-                    $row[] = number_format($record['months'][$m] ?? 0, 2);
+                    $row[] = $formatNumber($record['months'][$m] ?? 0);
                 }
 
-                $row[] = number_format($record['total_quarter_revenue'] ?? 0, 2);
-                $row[] = number_format($record['quarter_refund'] ?? 0, 2);
-                $row[] = number_format($record['net_quarter_revenue'] ?? 0, 2);
+                $row[] = $formatNumber($record['total_quarter_revenue'] ?? 0);
+                $row[] = $formatNumber($record['quarter_refund'] ?? 0);
+                $row[] = $formatNumber($record['net_quarter_revenue'] ?? 0);
 
                 $csvRows[] = implode(',', $row);
             }
 
             // Add totals row
-            $totalRow = ['TOTAL', '', number_format($totals['estimate'] ?? 0, 2), number_format($totals['re_estimate'] ?? 0, 2)];
+            $totalRow = ['"TOTAL"', '', $formatNumber($totals['estimate'] ?? 0), $formatNumber($totals['re_estimate'] ?? 0)];
             foreach ($months as $m) {
-                $totalRow[] = number_format($totals['months'][$m] ?? 0, 2);
+                $totalRow[] = $formatNumber($totals['months'][$m] ?? 0);
             }
-            $totalRow[] = number_format($totals['total_quarter_revenue'] ?? 0, 2);
-            $totalRow[] = number_format($totals['quarter_refund'] ?? 0, 2);
-            $totalRow[] = number_format($totals['net_quarter_revenue'] ?? 0, 2);
+            $totalRow[] = $formatNumber($totals['total_quarter_revenue'] ?? 0);
+            $totalRow[] = $formatNumber($totals['quarter_refund'] ?? 0);
+            $totalRow[] = $formatNumber($totals['net_quarter_revenue'] ?? 0);
             $csvRows[] = implode(',', $totalRow);
 
             // Generate CSV
             $csvContent = implode("\n", $csvRows);
 
+            // Add BOM for UTF-8 Excel compatibility
+            $csvContent = "\xEF\xBB\xBF" . $csvContent;
+
             return response($csvContent)
-                ->header('Content-Type', 'text/csv')
+                ->header('Content-Type', 'text/csv; charset=utf-8')
                 ->header('Content-Disposition', "attachment; filename=quarter_revenue_{$year}_Q{$quarter}.csv");
 
         } catch (\Exception $e) {

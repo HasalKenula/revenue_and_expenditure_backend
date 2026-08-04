@@ -201,8 +201,6 @@ class ODDController extends Controller
                     'Object' => $record->object,
                     'Sub Project' => $record->item, // Changed from 'Item' to 'Sub Project'
                     'Sub Object' => $record->sub_object,
-                    'Subject' => $record->subject,
-                    'SN' => $record->sn,
                     'Debit Amount' => round($record->debit_amount, 2),
                 ];
                 $totalDebit += $record->debit_amount;
@@ -217,8 +215,6 @@ class ODDController extends Controller
                 'Object' => '',
                 'Sub Project' => '',
                 'Sub Object' => '',
-                'Subject' => '',
-                'SN' => '',
                 'Debit Amount' => round($totalDebit, 2),
             ];
 

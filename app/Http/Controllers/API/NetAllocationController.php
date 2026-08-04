@@ -590,7 +590,6 @@ class NetAllocationController extends Controller
                     
                     $exportData[] = [
                         'Object Code' => $budget->object,
-                        'Object Name' => $budget->objname ?? '-',
                         'Allocation (Rs)' => round($budget->allocation ?? 0, 2),
                         'FR 66 P (Rs)' => round($fr66p, 2),
                         'FR 66 M (Rs)' => round($fr66m, 2),
@@ -652,7 +651,6 @@ class NetAllocationController extends Controller
                     $exportData[] = [
                         'Object Code' => $budget->object,
                         'Sub Project' => $budget->subproj ?? '-',
-                        'Object Name' => $budget->objname ?? '-',
                         'Allocation (Rs)' => round($budget->allocation ?? 0, 2),
                         'FR 66 P (Rs)' => round($fr66p, 2),
                         'FR 66 M (Rs)' => round($fr66m, 2),

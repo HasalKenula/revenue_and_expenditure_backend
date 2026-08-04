@@ -370,6 +370,245 @@ class CBGController extends Controller
     /**
      * Export data to CSV
      */
+    // public function export(Request $request)
+    // {
+    //     try {
+    //         $year = $request->input('year');
+    //         $month = $request->input('month');
+    //         $viewType = $request->input('view_type', 'cumulative');
+
+    //         if (!$year || !$month) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Year and month are required'
+    //             ], 422);
+    //         }
+
+    //         if ($viewType === 'cumulative') {
+    //             $monthsToInclude = range(1, (int)$month);
+    //         } else {
+    //             $monthsToInclude = [(int)$month];
+    //         }
+
+    //         $mainMinistryRows = [
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 0, 'object' => 2004],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2005],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2005],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 9, 'object' => 2005],
+    //             ['trno' => 304, 'program' => 3, 'project' => 2, 'sub_project' => 0, 'object' => 2201]
+    //         ];
+
+    //         $educationMinistryRows = [
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2004],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2004],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2004],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2004],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2005],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2005],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2005],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2005],
+    //             ['trno' => 318, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2005]
+    //         ];
+
+    //         $animalMinistryRows = [
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2004],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2004],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2004],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 3, 'object' => 2005],
+    //             ['trno' => 311, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2005]
+    //         ];
+
+    //         $agricultureMinistryRows = [
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2004],
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 4, 'object' => 2004],
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 5, 'object' => 2004],
+    //             ['trno' => 314, 'program' => 3, 'project' => 2, 'sub_project' => 6, 'object' => 2004]
+    //         ];
+
+    //         $landMinistryRows = [
+    //             ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2004],
+    //             ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 2, 'object' => 2004],
+    //             ['trno' => 308, 'program' => 3, 'project' => 2, 'sub_project' => 1, 'object' => 2005]
+    //         ];
+
+    //         $mainSecretaryRows = [
+    //             ['trno' => 320, 'program' => 3, 'project' => 5, 'sub_project' => 1, 'object' => 2004]
+    //         ];
+
+    //         // Add subject names for export
+    //         $mainMinistryRows = $this->addSubjectNames($mainMinistryRows);
+    //         $educationMinistryRows = $this->addSubjectNames($educationMinistryRows);
+    //         $animalMinistryRows = $this->addSubjectNames($animalMinistryRows);
+    //         $agricultureMinistryRows = $this->addSubjectNames($agricultureMinistryRows);
+    //         $landMinistryRows = $this->addSubjectNames($landMinistryRows);
+    //         $mainSecretaryRows = $this->addSubjectNames($mainSecretaryRows);
+
+    //         $exportData = [];
+
+    //         // Add Main Ministry data
+    //         $mainData = $this->processRowsForExport($mainMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: MAIN MINISTRY'];
+    //         $exportData = array_merge($exportData, $mainData);
+    //         $exportData[] = [];
+
+    //         // Add Education Ministry data
+    //         $educationData = $this->processRowsForExport($educationMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: EDUCATION MINISTRY'];
+    //         $exportData = array_merge($exportData, $educationData);
+    //         $exportData[] = [];
+
+    //         // Add Animal Ministry data
+    //         $animalData = $this->processRowsForExport($animalMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: ANIMAL MINISTRY'];
+    //         $exportData = array_merge($exportData, $animalData);
+    //         $exportData[] = [];
+
+    //         // Add Agriculture Ministry data
+    //         $agricultureData = $this->processRowsForExport($agricultureMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: AGRICULTURE MINISTRY'];
+    //         $exportData = array_merge($exportData, $agricultureData);
+    //         $exportData[] = [];
+
+    //         // Add Land Ministry data
+    //         $landData = $this->processRowsForExport($landMinistryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: LAND MINISTRY'];
+    //         $exportData = array_merge($exportData, $landData);
+    //         $exportData[] = [];
+
+    //         // Add Main Secretary data
+    //         $mainSecretaryData = $this->processRowsForExport($mainSecretaryRows, $year, $monthsToInclude);
+    //         $exportData[] = ['Table: MAIN SECRETARY MINISTRY'];
+    //         $exportData = array_merge($exportData, $mainSecretaryData);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $exportData,
+    //             'total_records' => count($exportData)
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    
+
+    // private function processRowsForExport($rows, $year, $monthsToInclude)
+    // {
+    //     $results = [];
+    //     $grandTotalDebit = 0;
+    //     $grandTotalOtherDebit = 0;
+    //     $grandTotalExpenditure = 0;
+
+    //     foreach ($rows as $row) {
+    //         $cumulativeDebit = 0;
+    //         $cumulativeOtherDebit = 0;
+
+    //         foreach ($monthsToInclude as $currentMonth) {
+    //             // ========== DEBIT (trno == head) ==========
+    //             // Get DR amount (code 1000)
+    //             $debitDR = MonthlyFincance::whereYear('created_at', $year)
+    //                 ->where('month', $currentMonth)
+    //                 ->where('trno', $row['trno'])
+    //                 ->where('head', $row['trno'])
+    //                 ->where('program', $row['program'])
+    //                 ->where('project', $row['project'])
+    //                 ->where('sub_project', $row['sub_project'])
+    //                 ->where('object', $row['object'])
+    //                 ->where('dr_cr_code', 1000)
+    //                 ->where('dr_cr', 'DR')
+    //                 ->sum('cash_xe');
+
+    //             // Get CR amount (code 2000)
+    //             $debitCR = MonthlyFincance::whereYear('created_at', $year)
+    //                 ->where('month', $currentMonth)
+    //                 ->where('trno', $row['trno'])
+    //                 ->where('head', $row['trno'])
+    //                 ->where('program', $row['program'])
+    //                 ->where('project', $row['project'])
+    //                 ->where('sub_project', $row['sub_project'])
+    //                 ->where('object', $row['object'])
+    //                 ->where('dr_cr_code', 2000)
+    //                 ->where('dr_cr', 'CR')
+    //                 ->sum('cash_xe');
+
+    //             // Net Debit = DR - CR
+    //             $netDebit = $debitDR - $debitCR;
+
+    //             // ========== OTHER DEBIT (trno != head) ==========
+    //             // Get DR amount (code 1000)
+    //             $otherDebitDR = MonthlyFincance::whereYear('created_at', $year)
+    //                 ->where('month', $currentMonth)
+    //                 ->where('trno', '!=', $row['trno'])
+    //                 ->where('head', $row['trno'])
+    //                 ->where('program', $row['program'])
+    //                 ->where('project', $row['project'])
+    //                 ->where('sub_project', $row['sub_project'])
+    //                 ->where('object', $row['object'])
+    //                 ->where('dr_cr_code', 1000)
+    //                 ->where('dr_cr', 'DR')
+    //                 ->sum('cash_xe');
+
+    //             // Get CR amount (code 2000)
+    //             $otherDebitCR = MonthlyFincance::whereYear('created_at', $year)
+    //                 ->where('month', $currentMonth)
+    //                 ->where('trno', '!=', $row['trno'])
+    //                 ->where('head', $row['trno'])
+    //                 ->where('program', $row['program'])
+    //                 ->where('project', $row['project'])
+    //                 ->where('sub_project', $row['sub_project'])
+    //                 ->where('object', $row['object'])
+    //                 ->where('dr_cr_code', 2000)
+    //                 ->where('dr_cr', 'CR')
+    //                 ->sum('cash_xe');
+
+    //             // Net Other Debit = DR - CR
+    //             $netOtherDebit = $otherDebitDR - $otherDebitCR;
+
+    //             $cumulativeDebit += $netDebit;
+    //             $cumulativeOtherDebit += $netOtherDebit;
+    //         }
+
+    //         $totalExpenditure = $cumulativeDebit + $cumulativeOtherDebit;
+
+    //         $results[] = [
+    //             'TR No' => $row['trno'],
+    //             'Program' => $row['program'],
+    //             'Project' => $row['project'],
+    //             'Sub Project' => $row['sub_project'],
+    //             'Object' => $row['object'],
+    //             'Subject Name' => $row['subject_name'],
+    //             'Debit' => round($cumulativeDebit, 2),
+    //             'Other Debit' => round($cumulativeOtherDebit, 2),
+    //             'Total Expenditure' => round($totalExpenditure, 2),
+    //         ];
+
+    //         $grandTotalDebit += $cumulativeDebit;
+    //         $grandTotalOtherDebit += $cumulativeOtherDebit;
+    //         $grandTotalExpenditure += $totalExpenditure;
+    //     }
+
+    //     $results[] = [
+    //         'TR No' => 'TOTAL',
+    //         'Program' => '',
+    //         'Project' => '',
+    //         'Sub Project' => '',
+    //         'Object' => '',
+    //         'Subject Name' => '',
+    //         'Debit' => round($grandTotalDebit, 2),
+    //         'Other Debit' => round($grandTotalOtherDebit, 2),
+    //         'Total Expenditure' => round($grandTotalExpenditure, 2),
+    //     ];
+
+    //     return $results;
+    // }
+
+    /**
+ * Export data to CSV
+ */
     public function export(Request $request)
     {
         try {
@@ -443,42 +682,119 @@ class CBGController extends Controller
             $landMinistryRows = $this->addSubjectNames($landMinistryRows);
             $mainSecretaryRows = $this->addSubjectNames($mainSecretaryRows);
 
+            // Process all data and combine into a single array with proper structure
             $exportData = [];
+            
+            // Add header row
+            $exportData[] = [
+                'Ministry',
+                'TR No', 
+                'Program', 
+                'Project', 
+                'Sub Project', 
+                'Object', 
+                'Subject Name', 
+                'Debit', 
+                'Other Debit', 
+                'Total Expenditure'
+            ];
 
-            // Add Main Ministry data
+            // Helper function to add ministry data
+            $addMinistryData = function($data, $ministryName) use (&$exportData) {
+                if (empty($data)) return;
+                
+                // Add ministry header row
+                $exportData[] = [
+                    $ministryName,
+                    '', '', '', '', '', '', '', '', ''
+                ];
+                
+                // Add data rows
+                foreach ($data as $row) {
+                    $exportData[] = [
+                        '',
+                        $row['trno'] ?? '',
+                        $row['program'] ?? '',
+                        $row['project'] ?? '',
+                        $row['sub_project'] ?? '',
+                        $row['object'] ?? '',
+                        $row['subject_name'] ?? '',
+                        round($row['debit'] ?? 0, 2),
+                        round($row['other_debit'] ?? 0, 2),
+                        round($row['total_expenditure'] ?? 0, 2)
+                    ];
+                }
+                
+                // Add empty row for spacing
+                $exportData[] = ['', '', '', '', '', '', '', '', '', ''];
+            };
+
+            // Process all ministries with their data
             $mainData = $this->processRowsForExport($mainMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: MAIN MINISTRY'];
-            $exportData = array_merge($exportData, $mainData);
-            $exportData[] = [];
+            $addMinistryData($mainData, 'CHIEF MINISTRY (Head: 304)');
 
-            // Add Education Ministry data
             $educationData = $this->processRowsForExport($educationMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: EDUCATION MINISTRY'];
-            $exportData = array_merge($exportData, $educationData);
-            $exportData[] = [];
+            $addMinistryData($educationData, 'MINISTRY OF SPORTS (Head: 318)');
 
-            // Add Animal Ministry data
             $animalData = $this->processRowsForExport($animalMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: ANIMAL MINISTRY'];
-            $exportData = array_merge($exportData, $animalData);
-            $exportData[] = [];
+            $addMinistryData($animalData, 'MINISTRY OF FISHERIES (Head: 311)');
 
-            // Add Agriculture Ministry data
             $agricultureData = $this->processRowsForExport($agricultureMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: AGRICULTURE MINISTRY'];
-            $exportData = array_merge($exportData, $agricultureData);
-            $exportData[] = [];
+            $addMinistryData($agricultureData, 'MINISTRY OF AGRICULTURE (Head: 314)');
 
-            // Add Land Ministry data
             $landData = $this->processRowsForExport($landMinistryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: LAND MINISTRY'];
-            $exportData = array_merge($exportData, $landData);
-            $exportData[] = [];
+            $addMinistryData($landData, 'MINISTRY OF EDUCATION (Head: 308)');
 
-            // Add Main Secretary data
             $mainSecretaryData = $this->processRowsForExport($mainSecretaryRows, $year, $monthsToInclude);
-            $exportData[] = ['Table: MAIN SECRETARY MINISTRY'];
-            $exportData = array_merge($exportData, $mainSecretaryData);
+            $addMinistryData($mainSecretaryData, 'CHIEF SECRETARIAT (Head: 320)');
+
+            // Add Summary section
+            $exportData[] = ['=== SUMMARY ===', '', '', '', '', '', '', '', '', ''];
+            
+            // Get totals from all ministries
+            $grandTotalDebit = 0;
+            $grandTotalOtherDebit = 0;
+            $grandTotalExpenditure = 0;
+            
+            $ministries = [
+                ['name' => 'CHIEF MINISTRY', 'data' => $mainData],
+                ['name' => 'MINISTRY OF SPORTS', 'data' => $educationData],
+                ['name' => 'MINISTRY OF FISHERIES', 'data' => $animalData],
+                ['name' => 'MINISTRY OF AGRICULTURE', 'data' => $agricultureData],
+                ['name' => 'MINISTRY OF EDUCATION', 'data' => $landData],
+                ['name' => 'CHIEF SECRETARIAT', 'data' => $mainSecretaryData]
+            ];
+            
+            foreach ($ministries as $ministry) {
+                $totalRow = end($ministry['data']);
+                if ($totalRow && isset($totalRow['debit'])) {
+                    $exportData[] = [
+                        $ministry['name'],
+                        '',
+                        '', '', '', '',
+                        'TOTAL',
+                        round($totalRow['debit'] ?? 0, 2),
+                        round($totalRow['other_debit'] ?? 0, 2),
+                        round($totalRow['total_expenditure'] ?? 0, 2)
+                    ];
+                    
+                    $grandTotalDebit += $totalRow['debit'] ?? 0;
+                    $grandTotalOtherDebit += $totalRow['other_debit'] ?? 0;
+                    $grandTotalExpenditure += $totalRow['total_expenditure'] ?? 0;
+                }
+            }
+            
+            // Add Grand Total
+            $exportData[] = ['', '', '', '', '', '', '', '', '', ''];
+            $exportData[] = [
+                'GRAND TOTAL',
+                '',
+                '', '', '', '',
+                '',
+                round($grandTotalDebit, 2),
+                round($grandTotalOtherDebit, 2),
+                round($grandTotalExpenditure, 2)
+            ];
 
             return response()->json([
                 'success' => true,
@@ -487,6 +803,7 @@ class CBGController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error in CBG export: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -507,7 +824,6 @@ class CBGController extends Controller
 
             foreach ($monthsToInclude as $currentMonth) {
                 // ========== DEBIT (trno == head) ==========
-                // Get DR amount (code 1000)
                 $debitDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', $row['trno'])
@@ -520,7 +836,6 @@ class CBGController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get CR amount (code 2000)
                 $debitCR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', $row['trno'])
@@ -533,11 +848,9 @@ class CBGController extends Controller
                     ->where('dr_cr', 'CR')
                     ->sum('cash_xe');
 
-                // Net Debit = DR - CR
                 $netDebit = $debitDR - $debitCR;
 
                 // ========== OTHER DEBIT (trno != head) ==========
-                // Get DR amount (code 1000)
                 $otherDebitDR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', '!=', $row['trno'])
@@ -550,7 +863,6 @@ class CBGController extends Controller
                     ->where('dr_cr', 'DR')
                     ->sum('cash_xe');
 
-                // Get CR amount (code 2000)
                 $otherDebitCR = MonthlyFincance::whereYear('created_at', $year)
                     ->where('month', $currentMonth)
                     ->where('trno', '!=', $row['trno'])
@@ -563,7 +875,6 @@ class CBGController extends Controller
                     ->where('dr_cr', 'CR')
                     ->sum('cash_xe');
 
-                // Net Other Debit = DR - CR
                 $netOtherDebit = $otherDebitDR - $otherDebitCR;
 
                 $cumulativeDebit += $netDebit;
@@ -573,15 +884,15 @@ class CBGController extends Controller
             $totalExpenditure = $cumulativeDebit + $cumulativeOtherDebit;
 
             $results[] = [
-                'TR No' => $row['trno'],
-                'Program' => $row['program'],
-                'Project' => $row['project'],
-                'Sub Project' => $row['sub_project'],
-                'Object' => $row['object'],
-                'Subject Name' => $row['subject_name'],
-                'Debit' => round($cumulativeDebit, 2),
-                'Other Debit' => round($cumulativeOtherDebit, 2),
-                'Total Expenditure' => round($totalExpenditure, 2),
+                'trno' => $row['trno'],
+                'program' => $row['program'],
+                'project' => $row['project'],
+                'sub_project' => $row['sub_project'],
+                'object' => $row['object'],
+                'subject_name' => $row['subject_name'],
+                'debit' => round($cumulativeDebit, 2),
+                'other_debit' => round($cumulativeOtherDebit, 2),
+                'total_expenditure' => round($totalExpenditure, 2),
             ];
 
             $grandTotalDebit += $cumulativeDebit;
@@ -589,18 +900,19 @@ class CBGController extends Controller
             $grandTotalExpenditure += $totalExpenditure;
         }
 
+        // Add total row
         $results[] = [
-            'TR No' => 'TOTAL',
-            'Program' => '',
-            'Project' => '',
-            'Sub Project' => '',
-            'Object' => '',
-            'Subject Name' => '',
-            'Debit' => round($grandTotalDebit, 2),
-            'Other Debit' => round($grandTotalOtherDebit, 2),
-            'Total Expenditure' => round($grandTotalExpenditure, 2),
+            'trno' => 'TOTAL',
+            'program' => '',
+            'project' => '',
+            'sub_project' => '',
+            'object' => '',
+            'subject_name' => '',
+            'debit' => round($grandTotalDebit, 2),
+            'other_debit' => round($grandTotalOtherDebit, 2),
+            'total_expenditure' => round($grandTotalExpenditure, 2),
         ];
 
         return $results;
     }
-}
+    }

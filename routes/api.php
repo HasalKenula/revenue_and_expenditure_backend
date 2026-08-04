@@ -233,6 +233,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('net-allocation')->group(function () {
         Route::get('/data', [NetAllocationController::class, 'getData']);
         Route::get('/filter-options', [NetAllocationController::class, 'getFilterOptionsEndpoint']);
+        Route::get('/export', [NetAllocationController::class, 'export']);
     });
 
     // ============================================
@@ -424,6 +425,7 @@ Route::prefix('net-revenue')->group(function () {
     Route::get('/data', [NetRevenueController::class, 'getData']);
     Route::get('/filter-options', [NetRevenueController::class, 'getFilterOptions']);
     Route::get('/export', [NetRevenueController::class, 'export']);
+    Route::get('/export-csv', [NetRevenueController::class, 'exportCsv']);
 });
 
 

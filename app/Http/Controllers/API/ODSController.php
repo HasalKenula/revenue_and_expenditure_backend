@@ -201,8 +201,6 @@ class ODSController extends Controller
                     'Object' => $record->object,
                     'Sub Project' => $record->sub_project,
                     'Sub Object' => $record->sub_object,
-                    'Subject' => $record->subject,
-                    'SN' => $record->sn,
                     'Surcharge Amount' => round($record->surcharge_amount, 2),
                 ];
                 $totalSurcharge += $record->surcharge_amount;
@@ -217,8 +215,6 @@ class ODSController extends Controller
                 'Object' => '',
                 'Sub Project' => '',
                 'Sub Object' => '',
-                'Subject' => '',
-                'SN' => '',
                 'Surcharge Amount' => round($totalSurcharge, 2),
             ];
 

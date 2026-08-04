@@ -886,7 +886,6 @@ class NetExpenditureController extends Controller
                 $exportData[] = [
                     'Object Code' => $budget->object,
                     'Sub Project' => $budget->subproj ?? '-',
-                    'Object Name' => $budget->objname ?? '-',
                     'Allocation' => round($budget->allocation ?? 0, 2),
                     'FR 66 P' => round($fr66p, 2),
                     'FR 66 M' => round($fr66m, 2),

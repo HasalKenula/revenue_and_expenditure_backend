@@ -52,6 +52,7 @@ use App\Http\Controllers\API\RevenueCollectionAccountNumberController;
 use App\Http\Controllers\API\RevenueReceiptsInCashController;
 use App\Http\Controllers\API\RevenueReceiptsInCashSummaryController;
 use App\Http\Controllers\API\RevenueReceiptController;
+use App\Http\Controllers\API\RevenueOpeningBalanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -409,6 +410,28 @@ Route::prefix('revenue-receipts')->group(function () {
     Route::put('/{id}', [RevenueReceiptController::class, 'update']);
     Route::delete('/{id}', [RevenueReceiptController::class, 'destroy']);
     Route::post('/delete-multiple', [RevenueReceiptController::class, 'destroyMultiple']);
+});
+
+// Revenue Opening Balances Routes
+Route::prefix('revenue-opening-balances')->group(function () {
+    Route::get('/', [RevenueOpeningBalanceController::class, 'index']);
+    Route::get('/summary', [RevenueOpeningBalanceController::class, 'getSummary']);
+    Route::get('/year-wise-summary', [RevenueOpeningBalanceController::class, 'getYearWiseSummary']);
+    Route::get('/by-account/{accountNumberId}', [RevenueOpeningBalanceController::class, 'getByAccountNumber']);
+    Route::get('/by-estimate/{estimateId}', [RevenueOpeningBalanceController::class, 'getByEstimate']);
+    Route::get('/by-year/{year}', [RevenueOpeningBalanceController::class, 'getByYear']);
+    Route::get('/revenue-code-options', [RevenueOpeningBalanceController::class, 'getRevenueCodeOptions']);
+    Route::get('/search-revenue-codes', [RevenueOpeningBalanceController::class, 'searchRevenueCodes']);
+    Route::get('/filter-options', [RevenueOpeningBalanceController::class, 'getFilterOptions']);
+    Route::get('/statistics', [RevenueOpeningBalanceController::class, 'getStatistics']);
+    Route::get('/export', [RevenueOpeningBalanceController::class, 'export']);
+    Route::get('/{id}', [RevenueOpeningBalanceController::class, 'show']);
+    Route::post('/', [RevenueOpeningBalanceController::class, 'store']);
+    Route::put('/{id}', [RevenueOpeningBalanceController::class, 'update']);
+    Route::delete('/{id}', [RevenueOpeningBalanceController::class, 'destroy']);
+    Route::post('/delete-multiple', [RevenueOpeningBalanceController::class, 'destroyMultiple']);
+    Route::post('/check-exists', [RevenueOpeningBalanceController::class, 'checkExists']);
+    Route::get('/revenue-code-names', [RevenueOpeningBalanceController::class, 'getRevenueCodeNames']);
 });
 
 

@@ -51,6 +51,7 @@ use App\Http\Controllers\API\RevenueAccountDataController;
 use App\Http\Controllers\API\RevenueCollectionAccountNumberController;
 use App\Http\Controllers\API\RevenueReceiptsInCashController;
 use App\Http\Controllers\API\RevenueReceiptsInCashSummaryController;
+use App\Http\Controllers\API\RevenueReceiptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -390,6 +391,26 @@ Route::prefix('treasury')->group(function () {
     Route::delete('/{id}', [TreasuryController::class, 'destroy']);
     
 });
+
+// Revenue Receipts Routes
+Route::prefix('revenue-receipts')->group(function () {
+    Route::get('/', [RevenueReceiptController::class, 'index']);
+    Route::get('/summary', [RevenueReceiptController::class, 'getSummary']);
+    Route::get('/month-wise-summary', [RevenueReceiptController::class, 'getMonthWiseSummary']);
+    Route::get('/by-account/{accountNumberId}', [RevenueReceiptController::class, 'getByAccountNumber']);
+    Route::get('/by-estimate/{estimateId}', [RevenueReceiptController::class, 'getByEstimate']);
+    Route::get('/revenue-code-options', [RevenueReceiptController::class, 'getRevenueCodeOptions']);
+    Route::get('/search-revenue-codes', [RevenueReceiptController::class, 'searchRevenueCodes']);
+    Route::get('/filter-options', [RevenueReceiptController::class, 'getFilterOptions']);
+    Route::get('/statistics', [RevenueReceiptController::class, 'getStatistics']);
+    Route::get('/export', [RevenueReceiptController::class, 'export']);
+    Route::get('/{id}', [RevenueReceiptController::class, 'show']);
+    Route::post('/', [RevenueReceiptController::class, 'store']);
+    Route::put('/{id}', [RevenueReceiptController::class, 'update']);
+    Route::delete('/{id}', [RevenueReceiptController::class, 'destroy']);
+    Route::post('/delete-multiple', [RevenueReceiptController::class, 'destroyMultiple']);
+});
+
 
 
 // Net Revenue Report routes

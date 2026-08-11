@@ -17,6 +17,9 @@ return new class extends Migration
             $table->year('year');
             $table->decimal('opening_balance', 15, 2);
             $table->timestamps();
+
+            // Composite unique constraint
+            $table->unique(['head', 'year'], 'unique_head_year');
         });
     }
 

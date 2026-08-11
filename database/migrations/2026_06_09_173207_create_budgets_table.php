@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('budgets', function (Blueprint $table) {
-            $table->id();
-
-            
+            $table->id();           
             $table->integer('head')->nullable();
             $table->integer('program')->nullable();
             $table->integer('project')->nullable();
@@ -25,6 +23,25 @@ return new class extends Migration
             $table->string('objname')->nullable();
             $table->decimal('amount', 15, 2)->nullable();
             $table->timestamps();
+
+            // Indexes
+            $table->index('head');
+            $table->index('program');
+            $table->index('project');
+            $table->index('subproj');
+            $table->index('object');
+
+            // Composite unique constraint
+            $table->unique(
+                [
+                    'head',
+                    'program',
+                    'project',
+                    'subproj',
+                    'object'
+                ],
+                'unique_budget_record'
+            );
         });
     }
 

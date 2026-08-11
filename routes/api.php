@@ -53,6 +53,10 @@ use App\Http\Controllers\API\RevenueReceiptsInCashController;
 use App\Http\Controllers\API\RevenueReceiptsInCashSummaryController;
 use App\Http\Controllers\API\RevenueReceiptController;
 use App\Http\Controllers\API\RevenueOpeningBalanceController;
+use App\Http\Controllers\API\MoneyTransistsController;
+use App\Http\Controllers\API\CashInTransactionController;
+use App\Http\Controllers\API\NatureOfRevenueController;
+use App\Http\Controllers\API\ActualRevenueReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -594,6 +598,35 @@ Route::prefix('revenue-receipts-in-cash-summary')->group(function () {
    Route::get('/data', [RevenueReceiptsInCashSummaryController::class, 'getData']);
    Route::get('/filter-options', [RevenueReceiptsInCashSummaryController::class, 'getFilterOptions']);
    Route::get('/export', [RevenueReceiptsInCashSummaryController::class, 'export']);
+});
+
+
+// Money Transists Routes
+Route::prefix('money-transists')->group(function () {
+    Route::get('/data', [MoneyTransistsController::class, 'getData']);
+    Route::get('/filter-options', [MoneyTransistsController::class, 'getFilterOptions']);
+    Route::get('/export', [MoneyTransistsController::class, 'export']);
+    Route::get('/export-pdf', [MoneyTransistsController::class, 'exportPDF']);
+});
+
+Route::prefix('cash-in-transaction')->group(function () {
+    Route::get('/data', [CashInTransactionController::class, 'getData']);
+    Route::get('/filter-options', [CashInTransactionController::class, 'getFilterOptions']);
+    Route::get('/export', [CashInTransactionController::class, 'export']);
+    Route::get('/export-pdf', [CashInTransactionController::class, 'exportPDF']);
+});
+
+Route::prefix('nature-of-revenue')->group(function () {
+    Route::get('/data', [NatureOfRevenueController::class, 'getData']);
+    Route::get('/filter-options', [NatureOfRevenueController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [NatureOfRevenueController::class, 'exportCsv']);
+});
+
+// Actual Revenue Report routes
+Route::prefix('actual-revenue-report')->group(function () {
+    Route::get('/data', [ActualRevenueReportController::class, 'getData']);
+    Route::get('/filter-options', [ActualRevenueReportController::class, 'getFilterOptions']);
+    Route::get('/export-pdf', [ActualRevenueReportController::class, 'exportPdf']);
 });
 
 

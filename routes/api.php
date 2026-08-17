@@ -57,7 +57,7 @@ use App\Http\Controllers\API\MoneyTransistsController;
 use App\Http\Controllers\API\CashInTransactionController;
 use App\Http\Controllers\API\NatureOfRevenueController;
 use App\Http\Controllers\API\ActualRevenueReportController;
-
+use App\Http\Controllers\API\NetExpenditurePercentageController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -366,6 +366,13 @@ Route::prefix('upkeep')->group(function () {
     Route::get('/data', [UpkeepController::class, 'getData']);
     Route::get('/filter-options', [UpkeepController::class, 'getFilterOptions']);
     Route::get('/export', [UpkeepController::class, 'export']);
+});
+
+// Net Expenditure with Percentage Routes
+Route::prefix('net-expenditure-percentage')->middleware('auth:sanctum')->group(function () {
+    Route::get('/data', [NetExpenditurePercentageController::class, 'getData']);
+    Route::get('/filter-options', [NetExpenditurePercentageController::class, 'getFilterOptionsEndpoint']);
+    Route::get('/export', [NetExpenditurePercentageController::class, 'export']);
 });
 
 Route::prefix('estimates')->group(function () {

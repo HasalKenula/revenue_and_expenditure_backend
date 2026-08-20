@@ -43,7 +43,7 @@ class ActualRevenueReportController extends Controller
                         ['codes' => ['1003-01-01', '1003-01-02'], 'name' => 'Motor Vehicle Revenue Licence Fees'],
                         ['codes' => ['1002-07-01', '1002-07-02'], 'name' => 'Stamp Duty (Provincial Council)'],
                         ['codes' => ['1002-09-00'], 'name' => 'Turn Over Tax'],
-                        ['codes' => ['1003-07-09', '1003-07-10', '1003-03-01'], 'name' => 'Other Licence Fees'],
+                        ['codes' => ['1003-07-09', '1003-07-10', '1003-07-12', '1003-03-01'], 'name' => 'Other Licence Fees'],
                     ],
                     'subtotal' => true,
                     'section_key' => 'A'
@@ -69,7 +69,7 @@ class ActualRevenueReportController extends Controller
                         ['codes' => ['2003-02-29'], 'name' => 'Registration of Companies Activities / Business names'],
                         ['codes' => ['2003-03-03'], 'name' => 'Fees Under Private Omnibus Act'],
                         ['codes' => ['2003-02-06'], 'name' => 'Fees Under Fauna & Flora Protection Ordinance (Timber Permit)'],
-                        ['codes' => ['2003-99-00', '2003-02-13', '2003-02-30', '2003-02-28'], 'name' => 'Others'],
+                        ['codes' => ['2003-99-00', '2003-99-01', '2003-99-02', '2003-99-03', '2003-99-04', '2003-02-13', '2003-02-21', '2003-02-30', '2003-02-28', '2003-02-24'], 'name' => 'Others'],
                     ],
                     'subtotal' => true,
                     'section_key' => 'C'

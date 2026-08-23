@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
@@ -70,7 +71,6 @@ class NetExpenditurePercentageController extends Controller
                 $supplementaryQuery->where('project', $project);
             }
             
-            // Add month filter for cumulative data (month <= selected month)
             if ($selectedMonth && $selectedMonth > 0) {
                 $supplementaryQuery->where('month', '<=', $selectedMonth);
             }
@@ -237,6 +237,9 @@ class NetExpenditurePercentageController extends Controller
             // Calculate cumulative expenditure totals
             $totalCumulativeExpenditure = $totalCumulativeDebit + $totalCumulativeOtherDeptDebit - $totalCumulativeSurcharge - $totalCumulativeOtherDeptSurcharge;
             
+            // Calculate Expected Percentage based on selected month
+            $expectedPercentage = $selectedMonth > 0 ? (100 * $selectedMonth / 12) : 0;
+            
             // Combine all data
             $records = [];
             $totalAllocation = 0;
@@ -254,7 +257,6 @@ class NetExpenditurePercentageController extends Controller
                 $fr66m = isset($supplementaryData[$key]) ? $supplementaryData[$key]->total_fr66m : 0;
                 $supplementary = isset($supplementaryData[$key]) ? $supplementaryData[$key]->total_supplementary : 0;
                 
-                // Cumulative values for this object/subproject
                 $cumulativeDebit = isset($cumulativeDebitData[$key]) ? $cumulativeDebitData[$key]->total_cumulative_debit : 0;
                 $cumulativeOtherDeptDebit = isset($cumulativeOtherDeptData[$key]) ? $cumulativeOtherDeptData[$key]->total_cumulative_other_dept_debit : 0;
                 $cumulativeSurcharge = isset($cumulativeSurchargeData[$key]) ? $cumulativeSurchargeData[$key]->total_cumulative_surcharge : 0;
@@ -262,23 +264,13 @@ class NetExpenditurePercentageController extends Controller
                 
                 $allocation = $budget->allocation ?? 0;
                 $netAllocation = $allocation + $fr66p - $fr66m + $supplementary;
-                
-                // Cumulative Expenditure = (Cumulative Debit + Cumulative Other Dept Debit) - (Cumulative Surcharge + Cumulative Other Dept Surcharge)
                 $cumulativeExpenditure = ($cumulativeDebit + $cumulativeOtherDeptDebit) - ($cumulativeSurcharge + $cumulativeOtherDeptSurcharge);
                 $balance = $netAllocation - $cumulativeExpenditure;
                 
-                // Calculate percentages
-                // 1. Percentage with Allocation: (Cumulative Exp. / Allocation) * 100
-                $percentageWithAllocation = $allocation > 0 ? ($cumulativeExpenditure / $allocation) * 100 : 0;
-                
-                // 2. Percentage with Net Allocation: (Cumulative Exp. / Net Allocation) * 100
+                // Calculate percentages (removed % with Allocation and Perfect % with Allocation)
                 $percentageWithNetAllocation = $netAllocation > 0 ? ($cumulativeExpenditure / $netAllocation) * 100 : 0;
-                
-                // 3. Perfect Percentage with Allocation: ((Allocation / 12) * current month number)
-                $perfectPercentageWithAllocation = $selectedMonth > 0 ? ($allocation / 12) * $selectedMonth : 0;
-                
-                // 4. Perfect Percentage with Net Allocation: ((Net Allocation / 12) * current month number)
                 $perfectPercentageWithNetAllocation = $selectedMonth > 0 ? ($netAllocation / 12) * $selectedMonth : 0;
+                $expectedPercentageValue = $expectedPercentage;
                 
                 $records[] = [
                     'object' => $budget->object,
@@ -291,10 +283,9 @@ class NetExpenditurePercentageController extends Controller
                     'net_allocation' => round($netAllocation, 2),
                     'cumulative_expenditure' => round($cumulativeExpenditure, 2),
                     'balance' => round($balance, 2),
-                    'percentage_with_allocation' => round($percentageWithAllocation, 2),
                     'percentage_with_net_allocation' => round($percentageWithNetAllocation, 2),
-                    'perfect_percentage_with_allocation' => round($perfectPercentageWithAllocation, 2),
                     'perfect_percentage_with_net_allocation' => round($perfectPercentageWithNetAllocation, 2),
+                    'expected_percentage' => round($expectedPercentageValue, 2),
                 ];
                 
                 $totalAllocation += $allocation;
@@ -307,10 +298,9 @@ class NetExpenditurePercentageController extends Controller
             }
             
             // Calculate total percentages
-            $totalPercentageWithAllocation = $totalAllocation > 0 ? ($totalCumulativeExpenditureAmount / $totalAllocation) * 100 : 0;
             $totalPercentageWithNetAllocation = $totalNetAllocation > 0 ? ($totalCumulativeExpenditureAmount / $totalNetAllocation) * 100 : 0;
-            $totalPerfectPercentageWithAllocation = $selectedMonth > 0 ? ($totalAllocation / 12) * $selectedMonth : 0;
             $totalPerfectPercentageWithNetAllocation = $selectedMonth > 0 ? ($totalNetAllocation / 12) * $selectedMonth : 0;
+            $totalExpectedPercentage = $expectedPercentage;
             
             return response()->json([
                 'success' => true,
@@ -324,10 +314,9 @@ class NetExpenditurePercentageController extends Controller
                         'total_net_allocation' => round($totalNetAllocation, 2),
                         'total_cumulative_expenditure' => round($totalCumulativeExpenditureAmount, 2),
                         'total_balance' => round($totalBalance, 2),
-                        'total_percentage_with_allocation' => round($totalPercentageWithAllocation, 2),
                         'total_percentage_with_net_allocation' => round($totalPercentageWithNetAllocation, 2),
-                        'total_perfect_percentage_with_allocation' => round($totalPerfectPercentageWithAllocation, 2),
                         'total_perfect_percentage_with_net_allocation' => round($totalPerfectPercentageWithNetAllocation, 2),
+                        'total_expected_percentage' => round($totalExpectedPercentage, 2),
                     ],
                     'applied_filters' => [
                         'head' => $head,
@@ -598,6 +587,9 @@ class NetExpenditurePercentageController extends Controller
                 return $item->object . '_' . ($item->sub_project ?? '');
             });
             
+            // Calculate Expected Percentage
+            $expectedPercentage = $selectedMonth > 0 ? (100 * $selectedMonth / 12) : 0;
+            
             // Prepare export data
             $exportData = [];
             
@@ -618,10 +610,8 @@ class NetExpenditurePercentageController extends Controller
                 $cumulativeExpenditure = ($cumulativeDebit + $cumulativeOtherDeptDebit) - ($cumulativeSurcharge + $cumulativeOtherDeptSurcharge);
                 $balance = $netAllocation - $cumulativeExpenditure;
                 
-                // Calculate percentages
-                $percentageWithAllocation = $allocation > 0 ? ($cumulativeExpenditure / $allocation) * 100 : 0;
+                // Calculate percentages (removed % with Allocation and Perfect % with Allocation)
                 $percentageWithNetAllocation = $netAllocation > 0 ? ($cumulativeExpenditure / $netAllocation) * 100 : 0;
-                $perfectPercentageWithAllocation = $selectedMonth > 0 ? ($allocation / 12) * $selectedMonth : 0;
                 $perfectPercentageWithNetAllocation = $selectedMonth > 0 ? ($netAllocation / 12) * $selectedMonth : 0;
                 
                 $exportData[] = [
@@ -634,10 +624,9 @@ class NetExpenditurePercentageController extends Controller
                     'Net Allocation' => round($netAllocation, 2),
                     'Cumulative Expenditure' => round($cumulativeExpenditure, 2),
                     'Balance' => round($balance, 2),
-                    '% with Allocation' => round($percentageWithAllocation, 2),
                     '% with Net Allocation' => round($percentageWithNetAllocation, 2),
-                    'Perfect % with Allocation' => round($perfectPercentageWithAllocation, 2),
                     'Perfect % with Net Allocation' => round($perfectPercentageWithNetAllocation, 2),
+                    'Expected %' => round($expectedPercentage, 2),
                 ];
             }
             

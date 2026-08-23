@@ -51,6 +51,12 @@ use App\Http\Controllers\API\RevenueAccountDataController;
 use App\Http\Controllers\API\RevenueCollectionAccountNumberController;
 use App\Http\Controllers\API\RevenueReceiptsInCashController;
 use App\Http\Controllers\API\RevenueReceiptsInCashSummaryController;
+use App\Http\Controllers\API\RevenueReceiptController;
+use App\Http\Controllers\API\RevenueOpeningBalanceController;
+use App\Http\Controllers\API\MoneyTransistsController;
+use App\Http\Controllers\API\CashInTransactionController;
+use App\Http\Controllers\API\NatureOfRevenueController;
+use App\Http\Controllers\API\ActualRevenueReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -391,6 +397,48 @@ Route::prefix('treasury')->group(function () {
     
 });
 
+// Revenue Receipts Routes
+Route::prefix('revenue-receipts')->group(function () {
+    Route::get('/', [RevenueReceiptController::class, 'index']);
+    Route::get('/summary', [RevenueReceiptController::class, 'getSummary']);
+    Route::get('/month-wise-summary', [RevenueReceiptController::class, 'getMonthWiseSummary']);
+    Route::get('/by-account/{accountNumberId}', [RevenueReceiptController::class, 'getByAccountNumber']);
+    Route::get('/by-estimate/{estimateId}', [RevenueReceiptController::class, 'getByEstimate']);
+    Route::get('/revenue-code-options', [RevenueReceiptController::class, 'getRevenueCodeOptions']);
+    Route::get('/search-revenue-codes', [RevenueReceiptController::class, 'searchRevenueCodes']);
+    Route::get('/filter-options', [RevenueReceiptController::class, 'getFilterOptions']);
+    Route::get('/statistics', [RevenueReceiptController::class, 'getStatistics']);
+    Route::get('/export', [RevenueReceiptController::class, 'export']);
+    Route::get('/{id}', [RevenueReceiptController::class, 'show']);
+    Route::post('/', [RevenueReceiptController::class, 'store']);
+    Route::put('/{id}', [RevenueReceiptController::class, 'update']);
+    Route::delete('/{id}', [RevenueReceiptController::class, 'destroy']);
+    Route::post('/delete-multiple', [RevenueReceiptController::class, 'destroyMultiple']);
+});
+
+// Revenue Opening Balances Routes
+Route::prefix('revenue-opening-balances')->group(function () {
+    Route::get('/', [RevenueOpeningBalanceController::class, 'index']);
+    Route::get('/summary', [RevenueOpeningBalanceController::class, 'getSummary']);
+    Route::get('/year-wise-summary', [RevenueOpeningBalanceController::class, 'getYearWiseSummary']);
+    Route::get('/by-account/{accountNumberId}', [RevenueOpeningBalanceController::class, 'getByAccountNumber']);
+    Route::get('/by-estimate/{estimateId}', [RevenueOpeningBalanceController::class, 'getByEstimate']);
+    Route::get('/by-year/{year}', [RevenueOpeningBalanceController::class, 'getByYear']);
+    Route::get('/revenue-code-options', [RevenueOpeningBalanceController::class, 'getRevenueCodeOptions']);
+    Route::get('/search-revenue-codes', [RevenueOpeningBalanceController::class, 'searchRevenueCodes']);
+    Route::get('/filter-options', [RevenueOpeningBalanceController::class, 'getFilterOptions']);
+    Route::get('/statistics', [RevenueOpeningBalanceController::class, 'getStatistics']);
+    Route::get('/export', [RevenueOpeningBalanceController::class, 'export']);
+    Route::get('/{id}', [RevenueOpeningBalanceController::class, 'show']);
+    Route::post('/', [RevenueOpeningBalanceController::class, 'store']);
+    Route::put('/{id}', [RevenueOpeningBalanceController::class, 'update']);
+    Route::delete('/{id}', [RevenueOpeningBalanceController::class, 'destroy']);
+    Route::post('/delete-multiple', [RevenueOpeningBalanceController::class, 'destroyMultiple']);
+    Route::post('/check-exists', [RevenueOpeningBalanceController::class, 'checkExists']);
+    Route::get('/revenue-code-names', [RevenueOpeningBalanceController::class, 'getRevenueCodeNames']);
+});
+
+
 
 // Net Revenue Report routes
 Route::prefix('net-revenue')->group(function () {
@@ -550,6 +598,35 @@ Route::prefix('revenue-receipts-in-cash-summary')->group(function () {
    Route::get('/data', [RevenueReceiptsInCashSummaryController::class, 'getData']);
    Route::get('/filter-options', [RevenueReceiptsInCashSummaryController::class, 'getFilterOptions']);
    Route::get('/export', [RevenueReceiptsInCashSummaryController::class, 'export']);
+});
+
+
+// Money Transists Routes
+Route::prefix('money-transists')->group(function () {
+    Route::get('/data', [MoneyTransistsController::class, 'getData']);
+    Route::get('/filter-options', [MoneyTransistsController::class, 'getFilterOptions']);
+    Route::get('/export', [MoneyTransistsController::class, 'export']);
+    Route::get('/export-pdf', [MoneyTransistsController::class, 'exportPDF']);
+});
+
+Route::prefix('cash-in-transaction')->group(function () {
+    Route::get('/data', [CashInTransactionController::class, 'getData']);
+    Route::get('/filter-options', [CashInTransactionController::class, 'getFilterOptions']);
+    Route::get('/export', [CashInTransactionController::class, 'export']);
+    Route::get('/export-pdf', [CashInTransactionController::class, 'exportPDF']);
+});
+
+Route::prefix('nature-of-revenue')->group(function () {
+    Route::get('/data', [NatureOfRevenueController::class, 'getData']);
+    Route::get('/filter-options', [NatureOfRevenueController::class, 'getFilterOptions']);
+    Route::get('/export-csv', [NatureOfRevenueController::class, 'exportCsv']);
+});
+
+// Actual Revenue Report routes
+Route::prefix('actual-revenue-report')->group(function () {
+    Route::get('/data', [ActualRevenueReportController::class, 'getData']);
+    Route::get('/filter-options', [ActualRevenueReportController::class, 'getFilterOptions']);
+    Route::get('/export-pdf', [ActualRevenueReportController::class, 'exportPdf']);
 });
 
 

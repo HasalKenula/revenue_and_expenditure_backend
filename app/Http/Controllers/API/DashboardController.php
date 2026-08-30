@@ -1,227 +1,51 @@
 <?php
-
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Budget;
+use App\Models\Estimate;
+use App\Models\Treasury;
 use App\Models\MonthlyFincance;
-use App\Models\SupplementaryRecord;
 use App\Models\OpeningBalance;
 use App\Models\ImpressIssue;
 use App\Models\ImpressSettlement;
+use App\Models\SupplementaryRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
     /**
-     * Get dashboard statistics
+     * Get main dashboard data - No filters
      */
-    public function getDashboardData(Request $request)
+    public function index(Request $request)
     {
         try {
-            $year = $request->input('year', date('Y'));
-            $month = $request->input('month', date('n'));
-            
-            \Log::info('Dashboard getData called', [
-                'year' => $year,
-                'month' => $month
-            ]);
+            Log::info('Dashboard API called');
 
-            // ========== 1. BUDGET STATISTICS ==========
-            $totalBudget = Budget::sum('amount') ?? 0;
-            
-            $totalBudgetByHead = Budget::select('head', DB::raw('SUM(amount) as total'))
-                ->whereNotNull('head')
-                ->groupBy('head')
-                ->orderBy('total', 'desc')
-                ->limit(10)
-                ->get();
-            
-            $totalBudgetByProgram = Budget::select('program', DB::raw('SUM(amount) as total'))
-                ->whereNotNull('program')
-                ->groupBy('program')
-                ->orderBy('total', 'desc')
-                ->limit(10)
-                ->get();
-
-            // ========== 2. MONTHLY FINANCE STATISTICS ==========
-            // Use year column instead of created_at for filtering
-            $totalDebits = MonthlyFincance::where('year', $year)
-                ->where('dr_cr', 'DR')
-                ->sum('cash_xe') ?? 0;
-            
-            $totalCredits = MonthlyFincance::where('year', $year)
-                ->where('dr_cr', 'CR')
-                ->sum('cash_xe') ?? 0;
-            
-            // Monthly trend
-            $monthlyTrend = MonthlyFincance::select(
-                    'month',
-                    DB::raw('SUM(CASE WHEN dr_cr = "DR" THEN cash_xe ELSE 0 END) as total_debit'),
-                    DB::raw('SUM(CASE WHEN dr_cr = "CR" THEN cash_xe ELSE 0 END) as total_credit')
-                )
-                ->where('year', $year)
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
-
-            // Current month statistics
-            $currentMonthDebits = MonthlyFincance::where('year', $year)
-                ->where('month', $month)
-                ->where('dr_cr', 'DR')
-                ->sum('cash_xe') ?? 0;
-            
-            $currentMonthCredits = MonthlyFincance::where('year', $year)
-                ->where('month', $month)
-                ->where('dr_cr', 'CR')
-                ->sum('cash_xe') ?? 0;
-
-            // Top 10 TRNOs by expenditure
-            $topTrnos = MonthlyFincance::where('year', $year)
-                ->where('dr_cr', 'DR')
-                ->select('trno', DB::raw('SUM(cash_xe) as total'))
-                ->whereNotNull('trno')
-                ->groupBy('trno')
-                ->orderBy('total', 'desc')
-                ->limit(10)
-                ->get();
-
-            // ========== 3. SUPPLEMENTARY RECORDS STATISTICS ==========
-            $totalSupplementary = SupplementaryRecord::where('year', $year)
-                ->sum('supplementary_amount') ?? 0;
-            
-            $totalFr66p = SupplementaryRecord::where('year', $year)
-                ->sum('fr66p') ?? 0;
-            
-            $totalFr66m = SupplementaryRecord::where('year', $year)
-                ->sum('fr66m') ?? 0;
-
-            // Supplementary by month
-            $supplementaryByMonth = SupplementaryRecord::where('year', $year)
-                ->select('month', DB::raw('SUM(supplementary_amount) as total'))
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
-
-            // ========== 4. OPENING BALANCE STATISTICS ==========
-            $totalOpeningBalance = OpeningBalance::where('year', $year)->sum('opening_balance') ?? 0;
-            
-            $openingBalancesByHead = OpeningBalance::where('year', $year)
-                ->select('head', 'opening_balance')
-                ->orderBy('opening_balance', 'desc')
-                ->limit(10)
-                ->get();
-
-            // ========== 5. IMPRESS STATISTICS ==========
-            $totalImpressIssued = ImpressIssue::where('year', $year)
-                ->sum('amount') ?? 0;
-            
-            $totalImpressSettled = ImpressSettlement::where('year', $year)
-                ->sum('amount') ?? 0;
-            
-            $netImpressBalance = $totalImpressIssued - $totalImpressSettled;
-
-            $impressByMonth = ImpressIssue::where('year', $year)
-                ->select('month', DB::raw('SUM(amount) as total_issued'))
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
-
-            $settlementByMonth = ImpressSettlement::where('year', $year)
-                ->select('month', DB::raw('SUM(amount) as total_settled'))
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
-
-            // ========== 6. BUDGET VS ACTUAL ==========
-            $budgetVsActual = Budget::select(
-                    'budgets.object',
-                    'budgets.objname',
-                    DB::raw('SUM(budgets.amount) as budgeted'),
-                    DB::raw('COALESCE(SUM(mf.cash_xe), 0) as actual')
-                )
-                ->leftJoin('monthly_fincances as mf', function($join) use ($year, $month) {
-                    $join->on('budgets.object', '=', 'mf.object')
-                         ->where('mf.dr_cr', 'DR')
-                         ->where('mf.year', $year)
-                         ->where('mf.month', '<=', $month);
-                })
-                ->whereNotNull('budgets.object')
-                ->groupBy('budgets.object', 'budgets.objname')
-                ->havingRaw('SUM(budgets.amount) > 0')
-                ->orderBy('budgets.object')
-                ->limit(20)
-                ->get();
-
-            $budgetVsActual = $budgetVsActual->map(function($item) {
-                $item->variance = ($item->budgeted ?? 0) - ($item->actual ?? 0);
-                $item->utilization = ($item->budgeted ?? 0) > 0 
-                    ? round((($item->actual ?? 0) / ($item->budgeted ?? 0)) * 100, 2) 
-                    : 0;
-                return $item;
-            });
-
-            // ========== 7. SUMMARY CARDS ==========
-            $summary = [
-                'total_budget' => round($totalBudget, 2),
-                'total_debits' => round($totalDebits, 2),
-                'total_credits' => round($totalCredits, 2),
-                'net_balance' => round($totalDebits - $totalCredits, 2),
-                'current_month_debits' => round($currentMonthDebits, 2),
-                'current_month_credits' => round($currentMonthCredits, 2),
-                'total_supplementary' => round($totalSupplementary, 2),
-                'total_fr66p' => round($totalFr66p, 2),
-                'total_fr66m' => round($totalFr66m, 2),
-                'total_opening_balance' => round($totalOpeningBalance, 2),
-                'total_impress_issued' => round($totalImpressIssued, 2),
-                'total_impress_settled' => round($totalImpressSettled, 2),
-                'net_impress_balance' => round($netImpressBalance, 2),
+            $data = [
+                'summary_cards' => $this->getSummaryCards(),
+                'revenue_chart' => $this->getRevenueChartData(),
+                'expenditure_chart' => $this->getExpenditureChartData(),
+                'budget_allocation' => $this->getBudgetAllocationData(),
+                'monthly_trends' => $this->getMonthlyTrends(),
+                'top_categories' => $this->getTopCategories(),
+                'recent_activities' => $this->getRecentActivities(),
+                'yearly_comparison' => $this->getYearlyComparison(),
+                'impress_status' => $this->getImpressStatus(),
+                'supplementary_summary' => $this->getSupplementarySummary(),
+                'quick_stats' => $this->getQuickStats(),
             ];
-
-            // ========== 8. RECENT ACTIVITIES ==========
-            $recentActivities = MonthlyFincance::where('year', $year)
-                ->where('month', $month)
-                ->orderBy('created_at', 'desc')
-                ->limit(10)
-                ->get(['trno', 'head', 'subject', 'dr_cr', 'cash_xe', 'created_at']);
-
-            // ========== 9. ADDITIONAL METRICS ==========
-            // Total records count
-            $totalRecords = MonthlyFincance::where('year', $year)->count();
-            $totalBudgetRecords = Budget::count();
-            $totalSupplementaryRecords = SupplementaryRecord::where('year', $year)->count();
 
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'summary' => $summary,
-                    'budget_by_head' => $totalBudgetByHead,
-                    'budget_by_program' => $totalBudgetByProgram,
-                    'monthly_trend' => $monthlyTrend,
-                    'top_trnos' => $topTrnos,
-                    'supplementary_by_month' => $supplementaryByMonth,
-                    'opening_balances' => $openingBalancesByHead,
-                    'impress_by_month' => $impressByMonth,
-                    'settlement_by_month' => $settlementByMonth,
-                    'budget_vs_actual' => $budgetVsActual,
-                    'recent_activities' => $recentActivities,
-                    'metrics' => [
-                        'total_records' => $totalRecords,
-                        'total_budget_records' => $totalBudgetRecords,
-                        'total_supplementary_records' => $totalSupplementaryRecords,
-                    ],
-                    'filters' => [
-                        'year' => $year,
-                        'month' => $month,
-                    ]
-                ]
+                'data' => $data
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error in Dashboard getData: ' . $e->getMessage());
-            \Log::error('Error trace: ' . $e->getTraceAsString());
-            
+            Log::error('Dashboard error: ' . $e->getMessage());
+            Log::error('Dashboard error trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -232,39 +56,618 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get filter options (years and months)
+     * Get summary cards data - All time totals
      */
-    public function getFilterOptions(Request $request)
+    private function getSummaryCards()
     {
         try {
-            // Get available years from monthly_fincances
-            $years = MonthlyFincance::select('year')
-                ->whereNotNull('year')
-                ->distinct()
-                ->orderBy('year', 'desc')
-                ->pluck('year')
-                ->values();
+            // Total Budget
+            $totalBudget = Budget::sum('amount') ?? 0;
 
-            if ($years->isEmpty()) {
-                $currentYear = date('Y');
-                $years = collect(range($currentYear - 5, $currentYear));
+            // Total Estimates
+            $totalEstimates = Estimate::sum('estimate') ?? 0;
+            $totalReEstimates = Estimate::sum('re_estimate') ?? 0;
+
+            // Total Revenue
+            $totalRevenue = Treasury::where('dr_cr', 'CR')
+                ->where('dr_cr_code', 4000)
+                ->sum('cash_xe') ?? 0;
+            $totalRevenue += MonthlyFincance::where('dr_cr', 'CR')
+                ->where('dr_cr_code', 4000)
+                ->sum('cash_xe') ?? 0;
+
+            // Total Refund
+            $totalRefund = Treasury::where('dr_cr', 'DR')
+                ->where('dr_cr_code', 5000)
+                ->sum('cash_xe') ?? 0;
+            $totalRefund += MonthlyFincance::where('dr_cr', 'DR')
+                ->where('dr_cr_code', 5000)
+                ->sum('cash_xe') ?? 0;
+
+            // Net Revenue
+            $netRevenue = $totalRevenue - $totalRefund;
+
+            // Impress Balance - Latest year only
+            $latestYear = ImpressIssue::max('year') ?? date('Y');
+            $totalImpressIssue = ImpressIssue::where('year', $latestYear)->sum('amount') ?? 0;
+            $totalImpressSettle = ImpressSettlement::where('year', $latestYear)->sum('amount') ?? 0;
+            $impressBalance = $totalImpressIssue - $totalImpressSettle;
+
+            // Total Records
+            $totalRecords = [
+                'budgets' => Budget::count(),
+                'estimates' => Estimate::count(),
+                'treasury' => Treasury::count(),
+                'monthly_fincances' => MonthlyFincance::count(),
+                'supplementary' => SupplementaryRecord::count(),
+            ];
+
+            return [
+                'total_budget' => round($totalBudget, 2),
+                'total_estimates' => round($totalEstimates, 2),
+                'total_re_estimates' => round($totalReEstimates, 2),
+                'total_revenue' => round($totalRevenue, 2),
+                'total_refund' => round($totalRefund, 2),
+                'net_revenue' => round($netRevenue, 2),
+                'impress_balance' => round($impressBalance, 2),
+                'total_impress_issue' => round($totalImpressIssue, 2),
+                'total_impress_settle' => round($totalImpressSettle, 2),
+                'total_records' => $totalRecords,
+                'total_records_count' => array_sum($totalRecords),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error in getSummaryCards: ' . $e->getMessage());
+            return [
+                'total_budget' => 0,
+                'total_estimates' => 0,
+                'total_re_estimates' => 0,
+                'total_revenue' => 0,
+                'total_refund' => 0,
+                'net_revenue' => 0,
+                'impress_balance' => 0,
+                'total_impress_issue' => 0,
+                'total_impress_settle' => 0,
+                'total_records' => [],
+                'total_records_count' => 0,
+            ];
+        }
+    }
+
+    /**
+     * Get revenue chart data - All time monthly cumulative
+     */
+    private function getRevenueChartData()
+    {
+        try {
+            $months = range(1, 12);
+            $revenueData = [];
+            $refundData = [];
+            $netData = [];
+
+            foreach ($months as $m) {
+                // Get revenue for each month (cumulative)
+                $revenue = Treasury::where('dr_cr', 'CR')
+                    ->where('dr_cr_code', 4000)
+                    ->where('month', '<=', $m)
+                    ->sum('cash_xe') ?? 0;
+                $revenue += MonthlyFincance::where('dr_cr', 'CR')
+                    ->where('dr_cr_code', 4000)
+                    ->where('month', '<=', $m)
+                    ->sum('cash_xe') ?? 0;
+
+                // Get refund for each month (cumulative)
+                $refund = Treasury::where('dr_cr', 'DR')
+                    ->where('dr_cr_code', 5000)
+                    ->where('month', '<=', $m)
+                    ->sum('cash_xe') ?? 0;
+                $refund += MonthlyFincance::where('dr_cr', 'DR')
+                    ->where('dr_cr_code', 5000)
+                    ->where('month', '<=', $m)
+                    ->sum('cash_xe') ?? 0;
+
+                $revenueData[] = round($revenue, 2);
+                $refundData[] = round($refund, 2);
+                $netData[] = round($revenue - $refund, 2);
             }
 
-            $months = collect(range(1, 12));
+            $monthNames = $this->getMonthNames();
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'years' => $years,
-                    'months' => $months,
-                ]
-            ]);
+            return [
+                'labels' => array_values($monthNames),
+                'revenue' => $revenueData,
+                'refund' => $refundData,
+                'net' => $netData,
+            ];
         } catch (\Exception $e) {
-            \Log::error('Error in Dashboard getFilterOptions: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            Log::error('Error in getRevenueChartData: ' . $e->getMessage());
+            return [
+                'labels' => [],
+                'revenue' => [],
+                'refund' => [],
+                'net' => [],
+            ];
         }
+    }
+
+    /**
+     * Get expenditure chart data - Top 10 heads
+     */
+    private function getExpenditureChartData()
+    {
+        try {
+            // Get expenditure by head (top 10)
+            $expenditureByHead = Treasury::where('dr_cr', 'DR')
+                ->select('head', DB::raw('SUM(cash_xe) as total'))
+                ->groupBy('head')
+                ->orderBy('total', 'desc')
+                ->limit(10)
+                ->get();
+
+            $labels = [];
+            $values = [];
+            $colors = $this->getChartColors();
+
+            foreach ($expenditureByHead as $index => $item) {
+                $labels[] = 'Head ' . ($item->head ?? 'Unknown');
+                $values[] = round($item->total, 2);
+            }
+
+            return [
+                'labels' => $labels,
+                'values' => $values,
+                'colors' => array_slice($colors, 0, count($labels)),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error in getExpenditureChartData: ' . $e->getMessage());
+            return [
+                'labels' => [],
+                'values' => [],
+                'colors' => [],
+            ];
+        }
+    }
+
+    /**
+     * Get budget allocation data - Top 10 heads
+     */
+    private function getBudgetAllocationData()
+    {
+        try {
+            // Get budget by head
+            $budgetByHead = Budget::select('head', DB::raw('SUM(amount) as total'))
+                ->whereNotNull('head')
+                ->groupBy('head')
+                ->orderBy('total', 'desc')
+                ->limit(10)
+                ->get();
+
+            $labels = [];
+            $values = [];
+            $colors = $this->getChartColors();
+
+            foreach ($budgetByHead as $index => $item) {
+                $labels[] = 'Head ' . ($item->head ?? 'Unknown');
+                $values[] = round($item->total, 2);
+            }
+
+            return [
+                'labels' => $labels,
+                'values' => $values,
+                'colors' => array_slice($colors, 0, count($labels)),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error in getBudgetAllocationData: ' . $e->getMessage());
+            return [
+                'labels' => [],
+                'values' => [],
+                'colors' => [],
+            ];
+        }
+    }
+
+    /**
+     * Get monthly trends - All years combined
+     */
+    private function getMonthlyTrends()
+    {
+        try {
+            $months = range(1, 12);
+            $trends = [];
+
+            foreach ($months as $m) {
+                $revenue = Treasury::where('dr_cr', 'CR')
+                    ->where('dr_cr_code', 4000)
+                    ->where('month', $m)
+                    ->sum('cash_xe') ?? 0;
+                $revenue += MonthlyFincance::where('dr_cr', 'CR')
+                    ->where('dr_cr_code', 4000)
+                    ->where('month', $m)
+                    ->sum('cash_xe') ?? 0;
+
+                $expenditure = Treasury::where('dr_cr', 'DR')
+                    ->where('month', $m)
+                    ->sum('cash_xe') ?? 0;
+
+                $monthName = $this->getMonthNames()[$m] ?? 'Month ' . $m;
+
+                $trends[] = [
+                    'month' => $m,
+                    'month_name' => $monthName,
+                    'revenue' => round($revenue, 2),
+                    'expenditure' => round($expenditure, 2),
+                    'net' => round($revenue - $expenditure, 2),
+                ];
+            }
+
+            return $trends;
+        } catch (\Exception $e) {
+            Log::error('Error in getMonthlyTrends: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get top revenue categories
+     */
+    private function getTopCategories()
+    {
+        try {
+            // Get top revenue codes from estimates
+            $topRevenue = Estimate::select('revenue_code_name', 'estimate')
+                ->whereNotNull('revenue_code_name')
+                ->orderBy('estimate', 'desc')
+                ->limit(10)
+                ->get();
+
+            $categories = [];
+            foreach ($topRevenue as $item) {
+                $categories[] = [
+                    'name' => $item->revenue_code_name ?? 'Unknown',
+                    'estimate' => round($item->estimate ?? 0, 2),
+                    'percentage' => 0,
+                ];
+            }
+
+            // Calculate percentages
+            $total = array_sum(array_column($categories, 'estimate'));
+            foreach ($categories as &$cat) {
+                $cat['percentage'] = $total > 0 ? round(($cat['estimate'] / $total) * 100, 2) : 0;
+            }
+
+            return $categories;
+        } catch (\Exception $e) {
+            Log::error('Error in getTopCategories: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get recent activities
+     */
+    private function getRecentActivities()
+    {
+        try {
+            $activities = [];
+
+            // Recent Treasury entries
+            $treasuryRecent = Treasury::orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+
+            foreach ($treasuryRecent as $item) {
+                $activities[] = [
+                    'type' => 'treasury',
+                    'title' => 'Treasury Entry',
+                    'description' => "TRNO: {$item->trno}, Head: {$item->head}, Amount: " . number_format($item->cash_xe, 2),
+                    'time' => $item->created_at ? $item->created_at->diffForHumans() : 'Just now',
+                    'created_at' => $item->created_at,
+                ];
+            }
+
+            // Recent Budget entries
+            $budgetRecent = Budget::orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+
+            foreach ($budgetRecent as $item) {
+                $activities[] = [
+                    'type' => 'budget',
+                    'title' => 'Budget Entry',
+                    'description' => "Head: {$item->head}, Amount: " . number_format($item->amount, 2),
+                    'time' => $item->created_at ? $item->created_at->diffForHumans() : 'Just now',
+                    'created_at' => $item->created_at,
+                ];
+            }
+
+            // Recent Estimate entries
+            $estimateRecent = Estimate::orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+
+            foreach ($estimateRecent as $item) {
+                $activities[] = [
+                    'type' => 'estimate',
+                    'title' => 'Estimate Entry',
+                    'description' => "{$item->revenue_code_name}, Estimate: " . number_format($item->estimate, 2),
+                    'time' => $item->created_at ? $item->created_at->diffForHumans() : 'Just now',
+                    'created_at' => $item->created_at,
+                ];
+            }
+
+            // Sort by created_at and get latest 10
+            usort($activities, function ($a, $b) {
+                if (!$a['created_at'] || !$b['created_at']) return 0;
+                return $b['created_at'] <=> $a['created_at'];
+            });
+
+            return array_slice($activities, 0, 10);
+        } catch (\Exception $e) {
+            Log::error('Error in getRecentActivities: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get yearly comparison
+     */
+    private function getYearlyComparison()
+    {
+        try {
+            $currentYear = date('Y');
+            $years = range($currentYear - 3, $currentYear);
+            $comparison = [];
+
+            foreach ($years as $year) {
+                $totalRevenue = Treasury::where('dr_cr', 'CR')
+                    ->where('dr_cr_code', 4000)
+                    ->where('year', $year)
+                    ->sum('cash_xe') ?? 0;
+                $totalRevenue += MonthlyFincance::where('dr_cr', 'CR')
+                    ->where('dr_cr_code', 4000)
+                    ->where('year', $year)
+                    ->sum('cash_xe') ?? 0;
+
+                $totalExpenditure = Treasury::where('dr_cr', 'DR')
+                    ->where('year', $year)
+                    ->sum('cash_xe') ?? 0;
+
+                $totalBudget = Budget::where('year', $year)->sum('amount') ?? 0;
+
+                $comparison[] = [
+                    'year' => $year,
+                    'revenue' => round($totalRevenue, 2),
+                    'expenditure' => round($totalExpenditure, 2),
+                    'budget' => round($totalBudget, 2),
+                    'net' => round($totalRevenue - $totalExpenditure, 2),
+                ];
+            }
+
+            return $comparison;
+        } catch (\Exception $e) {
+            Log::error('Error in getYearlyComparison: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get impress status - Latest year
+     */
+    private function getImpressStatus()
+    {
+        try {
+            $latestYear = ImpressIssue::max('year') ?? date('Y');
+
+            $issues = ImpressIssue::where('year', $latestYear)
+                ->select('head', DB::raw('SUM(amount) as total_issue'))
+                ->groupBy('head')
+                ->get();
+
+            $settlements = ImpressSettlement::where('year', $latestYear)
+                ->select('head', DB::raw('SUM(amount) as total_settle'))
+                ->groupBy('head')
+                ->get();
+
+            $status = [];
+            $headMap = [];
+
+            foreach ($issues as $issue) {
+                $headMap[$issue->head]['issue'] = round($issue->total_issue, 2);
+                $headMap[$issue->head]['head'] = $issue->head;
+            }
+
+            foreach ($settlements as $settlement) {
+                $headMap[$settlement->head]['settle'] = round($settlement->total_settle, 2);
+                if (!isset($headMap[$settlement->head]['head'])) {
+                    $headMap[$settlement->head]['head'] = $settlement->head;
+                }
+            }
+
+            foreach ($headMap as $head => $data) {
+                $issue = $data['issue'] ?? 0;
+                $settle = $data['settle'] ?? 0;
+                $status[] = [
+                    'head' => $head,
+                    'issue' => $issue,
+                    'settle' => $settle,
+                    'balance' => round($issue - $settle, 2),
+                    'status' => $issue > $settle ? 'Pending' : ($issue < $settle ? 'Over Settled' : 'Settled'),
+                ];
+            }
+
+            // Sort by balance descending
+            usort($status, function ($a, $b) {
+                return $b['balance'] <=> $a['balance'];
+            });
+
+            return array_slice($status, 0, 10);
+        } catch (\Exception $e) {
+            Log::error('Error in getImpressStatus: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get supplementary summary - All time
+     */
+    private function getSupplementarySummary()
+    {
+        try {
+            $supplementary = SupplementaryRecord::select(
+                DB::raw('SUM(fr66p) as total_fr66p'),
+                DB::raw('SUM(fr66m) as total_fr66m'),
+                DB::raw('SUM(supplementary_amount) as total_supplementary'),
+                DB::raw('COUNT(*) as total_records')
+            )->first();
+
+            // Get by head
+            $byHead = SupplementaryRecord::select('head', DB::raw('SUM(supplementary_amount) as total'))
+                ->groupBy('head')
+                ->orderBy('total', 'desc')
+                ->limit(5)
+                ->get();
+
+            return [
+                'total_fr66p' => round($supplementary->total_fr66p ?? 0, 2),
+                'total_fr66m' => round($supplementary->total_fr66m ?? 0, 2),
+                'total_supplementary' => round($supplementary->total_supplementary ?? 0, 2),
+                'total_records' => $supplementary->total_records ?? 0,
+                'by_head' => $byHead->map(function ($item) {
+                    return [
+                        'head' => $item->head,
+                        'total' => round($item->total, 2),
+                    ];
+                }),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error in getSupplementarySummary: ' . $e->getMessage());
+            return [
+                'total_fr66p' => 0,
+                'total_fr66m' => 0,
+                'total_supplementary' => 0,
+                'total_records' => 0,
+                'by_head' => [],
+            ];
+        }
+    }
+
+    /**
+     * Get quick stats - Current month only
+     */
+    private function getQuickStats()
+    {
+        try {
+            $currentMonth = (int) date('m');
+            $currentYear = (int) date('Y');
+
+            // Current month revenue
+            $currentRevenue = Treasury::where('dr_cr', 'CR')
+                ->where('dr_cr_code', 4000)
+                ->where('month', $currentMonth)
+                ->where('year', $currentYear)
+                ->sum('cash_xe') ?? 0;
+            $currentRevenue += MonthlyFincance::where('dr_cr', 'CR')
+                ->where('dr_cr_code', 4000)
+                ->where('month', $currentMonth)
+                ->where('year', $currentYear)
+                ->sum('cash_xe') ?? 0;
+
+            // Previous month revenue
+            $prevMonth = $currentMonth - 1;
+            $prevYear = $currentYear;
+            if ($prevMonth < 1) {
+                $prevMonth = 12;
+                $prevYear = $currentYear - 1;
+            }
+
+            $prevRevenue = Treasury::where('dr_cr', 'CR')
+                ->where('dr_cr_code', 4000)
+                ->where('month', $prevMonth)
+                ->where('year', $prevYear)
+                ->sum('cash_xe') ?? 0;
+            $prevRevenue += MonthlyFincance::where('dr_cr', 'CR')
+                ->where('dr_cr_code', 4000)
+                ->where('month', $prevMonth)
+                ->where('year', $prevYear)
+                ->sum('cash_xe') ?? 0;
+
+            $revenueChange = $prevRevenue > 0 
+                ? (($currentRevenue - $prevRevenue) / $prevRevenue) * 100 
+                : 0;
+
+            // Total unique heads
+            $totalHeads = Treasury::distinct('head')->count('head');
+
+            // Total unique TRNOs
+            $totalTrnos = Treasury::distinct('trno')->count('trno');
+
+            $monthName = $this->getMonthNames()[$currentMonth] ?? 'Month ' . $currentMonth;
+
+            return [
+                'current_month_revenue' => round($currentRevenue, 2),
+                'previous_month_revenue' => round($prevRevenue, 2),
+                'revenue_change_percentage' => round($revenueChange, 2),
+                'total_heads' => $totalHeads,
+                'total_trnos' => $totalTrnos,
+                'current_month' => $currentMonth,
+                'current_month_name' => $monthName,
+                'total_budget_records' => Budget::count(),
+                'total_estimate_records' => Estimate::count(),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error in getQuickStats: ' . $e->getMessage());
+            return [
+                'current_month_revenue' => 0,
+                'previous_month_revenue' => 0,
+                'revenue_change_percentage' => 0,
+                'total_heads' => 0,
+                'total_trnos' => 0,
+                'current_month' => (int) date('m'),
+                'current_month_name' => $this->getMonthNames()[(int) date('m')] ?? 'Unknown',
+                'total_budget_records' => 0,
+                'total_estimate_records' => 0,
+            ];
+        }
+    }
+
+    /**
+     * Get month names
+     */
+    private function getMonthNames()
+    {
+        return [
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December'
+        ];
+    }
+
+    /**
+     * Get chart colors
+     */
+    private function getChartColors()
+    {
+        return [
+            '#3B82F6', // Blue
+            '#10B981', // Green
+            '#F59E0B', // Yellow
+            '#EF4444', // Red
+            '#8B5CF6', // Purple
+            '#EC4899', // Pink
+            '#14B8A6', // Teal
+            '#F97316', // Orange
+            '#6366F1', // Indigo
+            '#84CC16', // Lime
+            '#06B6D4', // Cyan
+            '#D946EF', // Fuchsia
+        ];
     }
 }

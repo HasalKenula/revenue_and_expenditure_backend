@@ -353,11 +353,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // ============================================
     // DASHBOARD ROUTES
     // ============================================
-    Route::prefix('dashboard')->group(function () {
-        Route::get('/data', [DashboardController::class, 'getDashboardData']);
-        Route::get('/filter-options', [DashboardController::class, 'getFilterOptions']);
-    });
-
+    // Route::prefix('dashboard')->group(function () {
+    //     Route::get('/data', [DashboardController::class, 'getDashboardData']);
+    //     Route::get('/filter-options', [DashboardController::class, 'getFilterOptions']);
+    // });
+  
+    // Dashboard Routes
+Route::prefix('dashboard')->group(function () {
+    Route::get('/', [DashboardController::class, 'index']);
+});
    
 
 

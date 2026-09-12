@@ -209,76 +209,7 @@ class RevenueRefundByTrnoController extends Controller
         }
     }
 
-    /**
-     * Export data to CSV
-     */
-    // public function exportCsv(Request $request)
-    // {
-    //     try {
-    //         $year = $request->input('year');
-
-    //         if (!$year) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Year is required'
-    //             ], 422);
-    //         }
-
-    //         // Get data
-    //         $data = $this->getData($request);
-    //         $responseData = $data->getData();
-
-    //         if (!$responseData->success) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Failed to fetch data for export'
-    //             ], 500);
-    //         }
-
-    //         $records = $responseData->data->records;
-    //         $totals = $responseData->data->totals;
-
-    //         // Prepare CSV headers
-    //         $headers = ['TRNO', 'Revenue Code Name', 'Revenue Code', 'Refund Amount (Rs)', 'Month'];
-
-    //         $csvRows = [];
-    //         $csvRows[] = implode(',', $headers);
-
-    //         // Add data rows
-    //         foreach ($records as $record) {
-    //             $revenueCode = '';
-    //             if (!$record['is_subtotal']) {
-    //                 $revenueCode = ($record['head'] ?? '') . '-' . ($record['program'] ?? '') . '-' .
-    //                                ($record['project'] ?? '') . '-' . ($record['sub_project'] ?? '') . '-' .
-    //                                ($record['object'] ?? '');
-    //             }
-
-    //             $row = [
-    //                 $record['trno'] ?? '',
-    //                 $record['revenue_code_name'] ?? '',
-    //                 $revenueCode,
-    //                 number_format($record['refund_amount'] ?? 0, 2),
-    //                 $record['month_name'] ?? ''
-    //             ];
-
-    //             $csvRows[] = implode(',', $row);
-    //         }
-
-    //         // Generate CSV
-    //         $csvContent = implode("\n", $csvRows);
-
-    //         return response($csvContent)
-    //             ->header('Content-Type', 'text/csv')
-    //             ->header('Content-Disposition', "attachment; filename=revenue_refund_by_trno_{$year}.csv");
-
-    //     } catch (\Exception $e) {
-    //         \Log::error('Error in RevenueRefundByTrno exportCsv: ' . $e->getMessage());
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+   
     /**
      * Export data to CSV
      */

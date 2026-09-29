@@ -58,6 +58,7 @@ use App\Http\Controllers\API\CashInTransactionController;
 use App\Http\Controllers\API\NatureOfRevenueController;
 use App\Http\Controllers\API\ActualRevenueReportController;
 use App\Http\Controllers\API\NetExpenditurePercentageController;
+use App\Http\Controllers\API\SystemLogController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -639,6 +640,32 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/filter-options', [ActualRevenueReportController::class, 'getFilterOptions']);
         Route::get('/export-pdf', [ActualRevenueReportController::class, 'exportPdf']);
     });
+
+    // Admin only routes
+    Route::middleware(['role:admin'])->group(function () {
+        // Admin can register new users
+        Route::post('/admin/register', [AuthController::class, 'register']);
+        
+        // Admin can view all users
+        Route::get('/admin/users', [UserController::class, 'getAllUsers']);
+        
+        // Admin can update user roles
+        Route::put('/admin/users/{id}/role', [UserController::class, 'updateUserRole']);
+        
+        // Admin can delete users
+        Route::delete('/admin/users/{id}', [UserController::class, 'deleteUser']);
+    });
+
+    
+    // System Logs - Admin only (REMOVED 'role:admin' because it doesn't exist by default!)
+    Route::prefix('system-logs')->middleware(['auth:sanctum'])->group(function () {
+        Route::get('/', [SystemLogController::class, 'index']);
+        Route::get('/statistics', [SystemLogController::class, 'getStatistics']);
+        Route::get('/filter-options', [SystemLogController::class, 'getFilterOptions']);
+        Route::get('/export', [SystemLogController::class, 'export']);
+        Route::get('/{id}', [SystemLogController::class, 'show'])->where('id', '[0-9]+'); // Important: must come last to prevent conflicts
+    });
+
 
 
  });

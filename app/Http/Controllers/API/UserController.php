@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -118,10 +119,29 @@ class UserController extends Controller
     public function getAllUsers(Request $request)
     {
         try {
-            if (!$request->user()->hasRole('admin')) {
+            // Get the authenticated user
+            $user = $request->user();
+            
+            // Log for debugging
+            Log::info('getAllUsers called', [
+                'user_id' => $user ? $user->id : null,
+                'user_email' => $user ? $user->email : null,
+                'user_role' => $user ? $user->role : null
+            ]);
+            
+            // Check if user exists
+            if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unauthorized. Admin access required.'
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+            
+            // Check if user is admin - DIRECT COMPARISON instead of using hasRole
+            if ($user->role !== 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Admin access required. Your role: ' . $user->role
                 ], 403);
             }
 
@@ -133,6 +153,7 @@ class UserController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            Log::error('Error in getAllUsers: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch users: ' . $e->getMessage()
@@ -146,7 +167,11 @@ class UserController extends Controller
     public function updateUserRole(Request $request, $id)
     {
         try {
-            if (!$request->user()->hasRole('admin')) {
+            // Get the authenticated user
+            $user = $request->user();
+            
+            // Check if user is admin - DIRECT COMPARISON
+            if (!$user || $user->role !== 'admin') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized. Admin access required.'
@@ -154,7 +179,7 @@ class UserController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'role' => 'required|in:user,revenue_manager,expenditure_manager'
+                'role' => 'required|in:user,revenue_manager,expenditure_manager,admin'
             ]);
             
             if ($validator->fails()) {
@@ -164,33 +189,34 @@ class UserController extends Controller
                 ], 422);
             }
             
-            $user = User::find($id);
+            $targetUser = User::find($id);
             
-            if (!$user) {
+            if (!$targetUser) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found'
                 ], 404);
             }
             
-            if ($user->id === $request->user()->id) {
+            // Prevent admin from changing their own role
+            if ($targetUser->id === $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You cannot change your own role'
                 ], 400);
             }
             
-            $user->role = $request->role;
-            $user->save();
+            $targetUser->role = $request->role;
+            $targetUser->save();
             
             return response()->json([
                 'success' => true,
                 'message' => 'User role updated successfully',
                 'data' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role
+                    'id' => $targetUser->id,
+                    'name' => $targetUser->name,
+                    'email' => $targetUser->email,
+                    'role' => $targetUser->role
                 ]
             ]);
             
@@ -208,30 +234,35 @@ class UserController extends Controller
     public function deleteUser(Request $request, $id)
     {
         try {
-            if (!$request->user()->hasRole('admin')) {
+            // Get the authenticated user
+            $user = $request->user();
+            
+            // Check if user is admin - DIRECT COMPARISON
+            if (!$user || $user->role !== 'admin') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized. Admin access required.'
                 ], 403);
             }
 
-            $user = User::find($id);
+            $targetUser = User::find($id);
             
-            if (!$user) {
+            if (!$targetUser) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found'
                 ], 404);
             }
 
-            if ($user->id === $request->user()->id) {
+            // Prevent admin from deleting their own account
+            if ($targetUser->id === $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You cannot delete your own account'
                 ], 400);
             }
             
-            $user->delete();
+            $targetUser->delete();
             
             return response()->json([
                 'success' => true,

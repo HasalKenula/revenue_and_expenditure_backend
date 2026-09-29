@@ -1,6 +1,4 @@
 <?php
-// app/Models/User.php
-
 
 namespace App\Models;
 
@@ -46,6 +44,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
      * Check if user is a revenue manager
      */
     public function isRevenueManager(): bool
@@ -83,5 +89,17 @@ class User extends Authenticatable
     public function hasAnyRole(array $roles): bool
     {
         return in_array($this->role, $roles);
+    }
+
+    // app/Models/User.php
+
+    public function systemLogs()
+    {
+        return $this->hasMany(SystemLog::class);
+    }
+
+    public function latestLogin()
+    {
+        return $this->hasOne(SystemLog::class)->latest('login_time');
     }
 }
